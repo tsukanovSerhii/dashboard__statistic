@@ -1,26 +1,37 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@import 'tailwindcss';
+
+/* вмикає темну тему через клас .dark на <html> (а не системну) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--color-primary: #4c76f6;
+	--color-secondary: #00d08a;
+	--color-gray: #333333;
+	--color-light-gray: #6b6b6b;
+	--color-error: #ff5c5c;
+	--color-warning: #ffb93d;
+	--color-background: #f7f8fa;
+	--color-surface: #ffffff;
+
+	--color-btn: #3f62cd;
+	--color-btn-hover: #334fa4;
+	--color-btn-pressed: #6a8df7;
+	--color-btn-disabled: #cecece;
+
+	--font-main: 'Roboto', sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* темна тема: перевизначаємо ті самі токени іншими значеннями */
+.dark {
+	--color-gray: #e7e7ea;
+	--color-light-gray: #9a9aa5;
+	--color-background: #15151b;
+	--color-surface: #1e1e27;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Custom global styles can be added here */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+	@apply bg-background text-gray font-main min-h-screen;
 }
