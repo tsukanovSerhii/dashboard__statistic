@@ -14,6 +14,7 @@
 	--color-warning: #ffb93d;
 	--color-background: #f7f8fa;
 	--color-surface: #ffffff;
+	--color-title: #2b2b2b;
 
 	--color-btn: #3f62cd;
 	--color-btn-hover: #334fa4;
@@ -29,9 +30,19 @@
 	--color-light-gray: #9a9aa5;
 	--color-background: #15151b;
 	--color-surface: #1e1e27;
+	--color-title: #e7e7ea;
 }
 
 /* Custom global styles can be added here */
 body {
 	@apply bg-background text-gray font-main min-h-screen;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	@apply text-title;
 }

@@ -7,10 +7,11 @@ type InputProps = React.ComponentProps<'input'> & {
 	state?: 'default' | 'error' | 'success'
 	iconLeft?: LucideIcon
 	iconRight?: LucideIcon
+	wrapperClassName?: string
 }
 
 const states = {
-	default: 'border-transparent focus:border-light-gray',
+	default: 'border-transparent focus-within:border-light-gray',
 	error: 'border-error bg-error/10',
 	success: 'border-secondary bg-secondary/10'
 }
@@ -21,6 +22,7 @@ export const Input = ({
 	state = 'default',
 	id,
 	className,
+	wrapperClassName,
 	iconLeft: IconLeft,
 	iconRight: IconRight,
 	...props
@@ -45,7 +47,8 @@ export const Input = ({
 			<div
 				className={cn(
 					'flex min-h-11 items-center gap-2 rounded-lg border bg-background px-3',
-					states[state]
+					states[state],
+					wrapperClassName
 				)}
 			>
 				{IconLeft && (
