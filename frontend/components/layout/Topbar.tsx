@@ -1,12 +1,10 @@
+import { User } from '@/types'
 import { Search } from 'lucide-react'
 import { Avatar } from '../ui/Avatar'
 import { Input } from '../ui/Input'
 
 type Props = {
-	user: {
-		name: string
-		imgSrc: string
-	}
+	user: User
 }
 
 export const Topbar = ({ user }: Props) => {

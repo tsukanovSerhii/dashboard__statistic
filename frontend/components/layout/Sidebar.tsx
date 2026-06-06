@@ -2,6 +2,7 @@
 
 import { useThemeStore } from '@/lib/useThemeStore'
 import { cn } from '@/lib/utils'
+import { User } from '@/types'
 import {
 	ChartNoAxesColumnIncreasing,
 	ChevronsLeftRight,
@@ -26,10 +27,7 @@ const navigation = [
 ]
 
 type Props = {
-	user: {
-		name: string
-		imgSrc: string
-	}
+	user: User
 }
 
 export const Sidebar = ({ user }: Props) => {
@@ -110,7 +108,7 @@ export const Sidebar = ({ user }: Props) => {
 				<div className="mt-4 flex items-center gap-3 border-t border-light-gray/20 pt-4">
 					<Avatar
 						name={user.name}
-						src={null}
+						src={user.imgSrc || null}
 					/>
 					<div className="flex flex-col">
 						<span className="text-sm font-medium text-gray">{user.name}</span>
