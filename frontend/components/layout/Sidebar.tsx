@@ -25,7 +25,14 @@ const navigation = [
 	{ name: 'Settings', href: '/dashboard/settings', icon: SettingsIcon }
 ]
 
-export const Sidebar = () => {
+type Props = {
+	user: {
+		name: string
+		imgSrc: string
+	}
+}
+
+export const Sidebar = ({ user }: Props) => {
 	const pathname = usePathname()
 	const theme = useThemeStore(state => state.theme)
 	const toggleTheme = useThemeStore(state => state.toggleTheme)
@@ -102,11 +109,11 @@ export const Sidebar = () => {
 
 				<div className="mt-4 flex items-center gap-3 border-t border-light-gray/20 pt-4">
 					<Avatar
-						name="Hope Siefata"
+						name={user.name}
 						src={null}
 					/>
 					<div className="flex flex-col">
-						<span className="text-sm font-medium text-gray">Hope Siefata</span>
+						<span className="text-sm font-medium text-gray">{user.name}</span>
 						<span className="text-xs text-light-gray">Product designer</span>
 					</div>
 				</div>
