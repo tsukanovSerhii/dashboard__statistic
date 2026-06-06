@@ -15,6 +15,6 @@ export const useThemeStore = create<ThemeStore>()(
 			toggleTheme: () =>
 				set(state => ({ theme: state.theme === 'light' ? 'dark' : 'light' }))
 		}),
-		{ name: 'theme' } // ключ у localStorage
+		{ name: 'theme' } // localStorage key
 	)
 )

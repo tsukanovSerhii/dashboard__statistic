@@ -1,7 +1,7 @@
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Topbar } from '@/components/layout/Topbar'
 
-// Поки немає auth — користувач захардкоджений. Потім заміниться на реальні дані.
+// No auth yet — hardcoded user. Will be replaced with real data later.
 const user = {
 	name: 'Hope Siefata',
 	imgSrc: 'https://i.pravatar.cc/150?img=3'

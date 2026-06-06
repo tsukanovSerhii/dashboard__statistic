@@ -6,7 +6,7 @@ import { useEffect } from 'react'
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 	const theme = useThemeStore(state => state.theme)
 
-	// додає/прибирає клас .dark на <html> щоразу, коли тема змінюється
+	// add/remove .dark class on <html> whenever the theme changes
 	useEffect(() => {
 		document.documentElement.classList.toggle('dark', theme === 'dark')
 	}, [theme])
