@@ -28,8 +28,9 @@ next-env.d.ts
 .env.*
 !.env.example
 
-# Завантажені користувачем файли (backend)
-backend/uploads/
+# Завантажені користувачем файли (backend) — папку зберігаємо, вміст ні
+backend/uploads/*
+!backend/uploads/.gitkeep
 
 # Prisma — локальна БД, якщо колись з'явиться sqlite
 *.db
