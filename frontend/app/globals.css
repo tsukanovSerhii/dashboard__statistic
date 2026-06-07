@@ -2,7 +2,7 @@
 
 @import 'tailwindcss';
 
-/* вмикає темну тему через клас .dark на <html> (а не системну) */
+/* enables dark theme via .dark class on <html> (not the system one) */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
@@ -24,7 +24,7 @@
 	--font-main: 'Roboto', sans-serif;
 }
 
-/* темна тема: перевизначаємо ті самі токени іншими значеннями */
+/* dark theme: override the same tokens with different values */
 .dark {
 	--color-gray: #e7e7ea;
 	--color-light-gray: #9a9aa5;
