@@ -2,12 +2,12 @@
 
 import { Dropdown } from '@/components/ui/Dropdown'
 import { UploadZone } from '@/components/UploadZone'
-import { datasets, formatBytes, formatDate } from '@/lib/mock'
-import { cn } from '@/lib/utils'
-import { FileType } from '@/types'
+import { getDatasets } from '@/lib/api/datasets'
+import { cn, formatBytes, formatDate } from '@/lib/utils'
+import { Dataset, FileType } from '@/types'
 import { ChevronRight, FileSpreadsheet } from 'lucide-react'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 // badge colors for each file type
 const typeBadge: Record<FileType, string> = {
@@ -18,6 +18,18 @@ const typeBadge: Record<FileType, string> = {
 
 export default function DashboardPage() {
 	const [filter, setFilter] = useState<FileType | 'all'>('all')
+	const [datasets, setDatasets] = useState<Dataset[]>([])
+	const [loading, setLoading] = useState(true)
+
+	const loadDatasets = async () => {
+		getDatasets()
+			.then(data => setDatasets(data))
+			.finally(() => setLoading(false))
+	}
+
+	useEffect(() => {
+		loadDatasets()
+	}, [])
 
 	const filteredDatasets =
 		filter === 'all' ? datasets : datasets.filter(d => d.fileType === filter)
@@ -31,7 +43,7 @@ export default function DashboardPage() {
 				</p>
 			</div>
 
-			<UploadZone />
+			<UploadZone onUploaded={loadDatasets} />
 
 			<div className="flex items-center justify-between">
 				<h2 className="text-sm font-medium text-light-gray">
@@ -47,9 +59,9 @@ export default function DashboardPage() {
 				</div>
 			</div>
 
-			{filteredDatasets.length === 0 ? (
+			{loading ? (
 				<div className="rounded-xl border border-dashed border-light-gray/30 p-10 text-center text-sm text-light-gray">
-					No files of this type
+					Loading files...
 				</div>
 			) : (
 				<div className="flex flex-col gap-3">
