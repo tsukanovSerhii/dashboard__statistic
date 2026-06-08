@@ -1,5 +1,5 @@
-import fs from 'node:fs'
 import { and, desc, eq } from 'drizzle-orm'
+import fs from 'node:fs'
 import { db } from '../db/index.js'
 import { columnStats, datasets } from '../db/schema.js'
 import { analyzeRows } from './analytics.service.js'
@@ -12,7 +12,6 @@ type UploadInput = {
 	sizeBytes: number
 }
 
-// parse an uploaded file, compute stats, and persist everything
 export const createDataset = async ({
 	userId,
 	filePath,
@@ -21,14 +20,11 @@ export const createDataset = async ({
 }: UploadInput) => {
 	const fileType = detectFileType(originalName)
 
-	// 1. parse file into rows, then compute column stats
 	const rows = parseFile(filePath, fileType)
 	const stats = analyzeRows(rows)
 
-	// 2. file already analyzed — remove it from disk to save space
 	fs.unlink(filePath, () => {})
 
-	// 3. insert dataset row
 	const [dataset] = await db
 		.insert(datasets)
 		.values({
@@ -41,7 +37,6 @@ export const createDataset = async ({
 		})
 		.returning()
 
-	// 4. insert column stats (if any)
 	if (stats.length > 0) {
 		await db.insert(columnStats).values(
 			stats.map(s => ({
@@ -57,7 +52,6 @@ export const createDataset = async ({
 	return dataset
 }
 
-// all datasets for a user, newest first
 export const listDatasets = (userId: string) =>
 	db
 		.select()
@@ -65,7 +59,6 @@ export const listDatasets = (userId: string) =>
 		.where(eq(datasets.userId, userId))
 		.orderBy(desc(datasets.createdAt))
 
-// one dataset with its column stats (only if it belongs to the user)
 export const getDatasetById = async (id: string, userId: string) => {
 	const [dataset] = await db
 		.select()
@@ -82,7 +75,6 @@ export const getDatasetById = async (id: string, userId: string) => {
 	return { ...dataset, columns }
 }
 
-// delete a dataset (column stats cascade); returns true if something was deleted
 export const deleteDataset = async (id: string, userId: string) => {
 	const deleted = await db
 		.delete(datasets)
