@@ -1,24 +1,32 @@
+'use client'
+
+import { AuthGuard } from '@/components/providers/AuthGuard'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Topbar } from '@/components/layout/Topbar'
-
-// No auth yet — hardcoded user. Will be replaced with real data later.
-const user = {
-	name: 'Hope Siefata',
-	imgSrc: 'https://i.pravatar.cc/150?img=3'
-}
+import { useAuthStore } from '@/lib/stores/auth.store'
 
 export default function DashboardLayout({
 	children
 }: {
 	children: React.ReactNode
 }) {
+	const authUser = useAuthStore(state => state.user)
+
+	// map the auth user to the UI user shape (name/imgSrc)
+	const user = {
+		name: authUser?.email ?? 'User',
+		imgSrc: ''
+	}
+
 	return (
-		<div className="flex h-screen">
-			<Sidebar user={user} />
-			<div className="flex flex-1 flex-col overflow-hidden">
-				<Topbar user={user} />
-				<main className="flex-1 overflow-y-auto p-6">{children}</main>
+		<AuthGuard>
+			<div className="flex h-screen">
+				<Sidebar user={user} />
+				<div className="flex flex-1 flex-col overflow-hidden">
+					<Topbar user={user} />
+					<main className="flex-1 overflow-y-auto p-6">{children}</main>
+				</div>
 			</div>
-		</div>
+		</AuthGuard>
 	)
 }

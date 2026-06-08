@@ -1,4 +1,4 @@
-import { ThemeProvider } from '@/components/ThemeProvider'
+import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import type { Metadata } from 'next'
 import './globals.css'
 

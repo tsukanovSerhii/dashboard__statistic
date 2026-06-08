@@ -1,3 +1,17 @@
+'use client'
+
+import { useAuthStore } from '@/lib/stores/auth.store'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+
 export default function Home() {
-	return <div className="p-10"></div>
+	const router = useRouter()
+	const token = useAuthStore(state => state.token)
+
+	useEffect(() => {
+		// send the user where they belong
+		router.replace(token ? '/dashboard' : '/login')
+	}, [token, router])
+
+	return null
 }
