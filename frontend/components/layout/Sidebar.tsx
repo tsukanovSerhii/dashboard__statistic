@@ -1,6 +1,7 @@
 'use client'
 
-import { useThemeStore } from '@/lib/useThemeStore'
+import { useAuthStore } from '@/lib/stores/auth.store'
+import { useThemeStore } from '@/lib/stores/theme.store'
 import { cn } from '@/lib/utils'
 import { User } from '@/types'
 import {
@@ -13,7 +14,7 @@ import {
 	Sun
 } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Avatar } from '../ui/Avatar'
 
 const navigation = [
@@ -32,9 +33,16 @@ type Props = {
 
 export const Sidebar = ({ user }: Props) => {
 	const pathname = usePathname()
+	const router = useRouter()
+	const logout = useAuthStore(state => state.logout)
 	const theme = useThemeStore(state => state.theme)
 	const toggleTheme = useThemeStore(state => state.toggleTheme)
 	const isDark = theme === 'dark'
+
+	const handleLogout = () => {
+		logout()
+		router.replace('/login')
+	}
 
 	return (
 		<aside className="flex h-screen w-64 flex-col border-r border-light-gray/20 px-6 py-4">
@@ -97,6 +105,7 @@ export const Sidebar = ({ user }: Props) => {
 					<li>
 						<button
 							type="button"
+							onClick={handleLogout}
 							className="flex w-full items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium text-error transition-colors hover:bg-error/5"
 						>
 							<LogOut size={20} />

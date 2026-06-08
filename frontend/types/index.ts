@@ -1,6 +1,14 @@
+// UI display user (sidebar/topbar) — mock for now
 export type User = {
 	name: string
 	imgSrc: string
+}
+
+// authenticated user returned by the backend
+export type AuthUser = {
+	id: string
+	email: string
+	createdAt?: string
 }
 
 export type FileType = 'csv' | 'xlsx' | 'json'
