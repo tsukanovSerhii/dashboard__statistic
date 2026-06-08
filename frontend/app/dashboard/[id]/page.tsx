@@ -1,19 +1,20 @@
-import { formatBytes, getDataset } from '@/lib/mock'
-import { cn } from '@/lib/utils'
-import type { Column } from '@/types'
+'use client'
+
+import { getDatasetById } from '@/lib/api/datasets'
+import { cn, formatBytes } from '@/lib/utils'
+import type { Column, Dataset } from '@/types'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { useParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
-// badge colors for each column data type
-const columnTypeBadge: Record<Column['type'], string> = {
+const columnTypeBadge: Record<Column['dataType'], string> = {
 	number: 'bg-primary/15 text-primary',
 	string: 'bg-secondary/15 text-secondary',
 	date: 'bg-warning/15 text-warning',
 	boolean: 'bg-light-gray/20 text-light-gray'
 }
 
-// small reusable metric card
 const StatCard = ({ label, value }: { label: string; value: string }) => (
 	<div className="flex flex-col gap-1 rounded-xl border border-light-gray/20 bg-surface p-4">
 		<span className="text-xs text-light-gray">{label}</span>
@@ -21,14 +22,26 @@ const StatCard = ({ label, value }: { label: string; value: string }) => (
 	</div>
 )
 
-export default async function DatasetPage(props: PageProps<'/dashboard/[id]'>) {
-	const { id } = await props.params
-	const dataset = getDataset(id)
+export default function DatasetPage() {
+	const params = useParams()
+	const id = params.id as string
 
-	if (!dataset) notFound() // 404 if id does not exist
+	const [dataset, setDataset] = useState<Dataset | null>(null)
+	const [loading, setLoading] = useState(true)
+	const [notFound, setNotFound] = useState(false)
 
-	// total missing values across all columns
-	const totalNulls = dataset.columns.reduce((sum, c) => sum + c.nullCount, 0)
+	useEffect(() => {
+		getDatasetById(id)
+			.then(setDataset)
+			.catch(() => setNotFound(true))
+			.finally(() => setLoading(false))
+	}, [id])
+
+	if (loading) return <p>Loading…</p>
+	if (notFound || !dataset) return <p>Dataset not found</p>
+
+	const columns = dataset.columns ?? []
+	const totalNulls = columns.reduce((sum, c) => sum + c.nullCount, 0)
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -71,7 +84,7 @@ export default async function DatasetPage(props: PageProps<'/dashboard/[id]'>) {
 			{/* columns table */}
 			<div>
 				<h2 className="mb-3 text-sm font-medium text-light-gray">
-					Columns · {dataset.columns.length}
+					Columns · {columns.length}
 				</h2>
 				<div className="overflow-hidden rounded-xl border border-light-gray/20">
 					<table className="w-full text-sm">
@@ -85,7 +98,7 @@ export default async function DatasetPage(props: PageProps<'/dashboard/[id]'>) {
 							</tr>
 						</thead>
 						<tbody>
-							{dataset.columns.map(col => {
+							{columns.map(col => {
 								// percentage of non-null values in this column
 								const fillRate = Math.round(
 									((dataset.rowCount - col.nullCount) / dataset.rowCount) * 100
@@ -102,10 +115,10 @@ export default async function DatasetPage(props: PageProps<'/dashboard/[id]'>) {
 											<span
 												className={cn(
 													'rounded px-1.5 py-0.5 text-xs font-medium',
-													columnTypeBadge[col.type]
+													columnTypeBadge[col.dataType]
 												)}
 											>
-												{col.type}
+												{col.dataType}
 											</span>
 										</td>
 										<td className="px-4 py-3 text-light-gray">
