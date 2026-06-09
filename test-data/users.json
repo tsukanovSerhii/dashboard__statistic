@@ -1,0 +1,10 @@
+[
+	{ "user_id": 1, "name": "Alice", "age": 28, "country": "USA", "active": true, "signup": "2025-03-10" },
+	{ "user_id": 2, "name": "Bob", "age": 34, "country": "UK", "active": false, "signup": "2025-04-22" },
+	{ "user_id": 3, "name": "Carol", "age": null, "country": "USA", "active": true, "signup": "2025-05-01" },
+	{ "user_id": 4, "name": "David", "age": 41, "country": "Canada", "active": true, "signup": "2025-05-15" },
+	{ "user_id": 5, "name": "Eve", "age": 25, "country": "UK", "active": false, "signup": null },
+	{ "user_id": 6, "name": "Frank", "age": 38, "country": "USA", "active": true, "signup": "2025-06-20" },
+	{ "user_id": 7, "name": "Grace", "age": 30, "country": "Canada", "active": null, "signup": "2025-07-03" },
+	{ "user_id": 8, "name": "Heidi", "age": 27, "country": "USA", "active": true, "signup": "2025-07-18" }
+]
