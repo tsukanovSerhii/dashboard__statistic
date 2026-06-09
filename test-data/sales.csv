@@ -1,0 +1,16 @@
+order_id,product,amount,quantity,region,order_date,is_paid
+1001,Laptop,1299.99,1,Europe,2026-01-15,true
+1002,Mouse,24.50,3,Asia,2026-01-16,true
+1003,Keyboard,79.00,2,Europe,2026-01-18,false
+1004,Monitor,349.99,1,America,2026-01-20,true
+1005,Laptop,1299.99,1,Asia,2026-01-22,true
+1006,Webcam,,2,Europe,2026-01-25,false
+1007,Mouse,24.50,5,America,2026-01-28,true
+1008,Headset,89.99,1,Europe,,true
+1009,Monitor,349.99,2,Asia,2026-02-01,false
+1010,Keyboard,79.00,,America,2026-02-03,true
+1011,Laptop,1499.00,1,Europe,2026-02-05,true
+1012,Mouse,24.50,4,Asia,2026-02-08,
+1013,Cable,9.99,10,America,2026-02-10,true
+1014,Monitor,,1,Europe,2026-02-12,false
+1015,Webcam,59.99,3,Asia,2026-02-15,true

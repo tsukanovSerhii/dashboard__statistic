@@ -1,6 +1,9 @@
 import fs from 'node:fs'
 import Papa from 'papaparse'
-import * as XLSX from 'xlsx'
+import pkg from 'xlsx'
+
+// xlsx is a CommonJS package — destructure from the default export for ESM
+const { readFile, utils } = pkg
 
 // a parsed row is just a map of column name -> value
 export type Row = Record<string, unknown>
@@ -27,9 +30,9 @@ const parseCsv = (filePath: string): Row[] => {
 }
 
 const parseXlsx = (filePath: string): Row[] => {
-	const workbook = XLSX.readFile(filePath)
+	const workbook = readFile(filePath)
 	const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
-	return XLSX.utils.sheet_to_json<Row>(firstSheet)
+	return utils.sheet_to_json<Row>(firstSheet)
 }
 
 const parseJson = (filePath: string): Row[] => {
