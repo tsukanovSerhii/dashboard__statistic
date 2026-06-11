@@ -52,3 +52,31 @@ export const registerUser = async (email: string, password: string) => {
 
 	return { user, token }
 }
+
+export const changePassword = async (
+	userId: string,
+	currentPassword: string,
+	newPassword: string
+) => {
+	const [user] = await db.select().from(users).where(eq(users.id, userId))
+	if (!user) {
+		throw new Error('User not found')
+	}
+
+	// verify the current password before allowing a change
+	const isMatch = await bcrypt.compare(currentPassword, user.password)
+	if (!isMatch) {
+		throw new Error('Current password is incorrect')
+	}
+
+	const passwordHash = await bcrypt.hash(newPassword, 10)
+	await db
+		.update(users)
+		.set({ password: passwordHash })
+		.where(eq(users.id, userId))
+}
+
+export const deleteUser = async (userId: string) => {
+	// datasets/columns/rows are removed via ON DELETE CASCADE
+	await db.delete(users).where(eq(users.id, userId))
+}
