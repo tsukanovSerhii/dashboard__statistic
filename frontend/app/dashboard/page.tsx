@@ -1,8 +1,9 @@
 'use client'
 
-import { Dropdown } from '@/components/ui/Dropdown'
 import { UploadZone } from '@/components/dataset/UploadZone'
-import { getDatasets } from '@/lib/api/datasets'
+import { Button } from '@/components/ui/Button'
+import { Dropdown } from '@/components/ui/Dropdown'
+import { deleteDataset, getDatasets } from '@/lib/api/datasets'
 import { FILE_TYPE_BADGE } from '@/lib/constants'
 import { cn, formatBytes, formatDate } from '@/lib/utils'
 import { Dataset, FileType } from '@/types'
@@ -19,6 +20,18 @@ export default function DashboardPage() {
 		getDatasets()
 			.then(data => setDatasets(data))
 			.finally(() => setLoading(false))
+	}
+
+	const handleDeleteDataset = async (
+		e: React.MouseEvent,
+		id: string,
+		filename: string
+	) => {
+		e.preventDefault()
+		e.stopPropagation()
+		if (!confirm(`Delete "${filename}"?`)) return
+		await deleteDataset(id)
+		loadDatasets()
 	}
 
 	useEffect(() => {
@@ -113,6 +126,13 @@ export default function DashboardPage() {
 									</span>
 									<span className="text-xs text-light-gray">size</span>
 								</div>
+								<Button
+									size="xs"
+									variant="danger"
+									onClick={e => handleDeleteDataset(e, d.id, d.filename)}
+								>
+									Delete
+								</Button>
 							</div>
 
 							<ChevronRight

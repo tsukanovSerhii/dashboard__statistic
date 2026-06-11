@@ -2,6 +2,7 @@ import { cn } from '@/lib/utils'
 
 type ButtonProps = React.ComponentProps<'button'> & {
 	size?: 'xs' | 'sm' | 'md' | 'lg'
+	variant?: 'primary' | 'danger' | 'ghost'
 	disable?: boolean
 }
 
@@ -12,9 +13,16 @@ const sizes = {
 	lg: 'px-5.5 py-4 text-lg'
 }
 
+const variants = {
+	primary: 'bg-btn text-white hover:bg-btn-hover focus:bg-btn-pressed',
+	danger: 'bg-error text-white hover:bg-error/90 focus:bg-error/80',
+	ghost: 'bg-transparent text-error hover:bg-error/10'
+}
+
 export const Button = ({
 	children,
 	size = 'md',
+	variant = 'primary',
 	className,
 	disable = false,
 	...props
@@ -22,11 +30,11 @@ export const Button = ({
 	return (
 		<button
 			className={cn(
-				'bg-btn text-white transition-colors duration-300 ease-in-out hover:bg-btn-hover focus:bg-btn-pressed',
+				'rounded-lg transition-colors duration-300 ease-in-out',
 				sizes[size],
 				disable
-					? 'cursor-not-allowed text-gray bg-btn-disabled hover:bg-btn-disabled focus:bg-btn-disabled'
-					: 'cursor-pointer',
+					? 'cursor-not-allowed bg-btn-disabled text-gray hover:bg-btn-disabled focus:bg-btn-disabled'
+					: cn('cursor-pointer', variants[variant]),
 				className
 			)}
 			{...props}
