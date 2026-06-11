@@ -37,12 +37,20 @@ const parseXlsx = (filePath: string): Row[] => {
 
 const parseJson = (filePath: string): Row[] => {
 	const content = fs.readFileSync(filePath, 'utf-8')
-	const data = JSON.parse(content)
+
+	let data: unknown
+	try {
+		data = JSON.parse(content)
+	} catch {
+		// hide the raw parser error behind a friendly message
+		throw new Error('Invalid JSON file')
+	}
+
 	// expect an array of objects
 	if (!Array.isArray(data)) {
 		throw new Error('JSON must be an array of objects')
 	}
-	return data
+	return data as Row[]
 }
 
 // parse any supported file into rows

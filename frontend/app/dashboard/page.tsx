@@ -15,11 +15,18 @@ export default function DashboardPage() {
 	const [filter, setFilter] = useState<FileType | 'all'>('all')
 	const [datasets, setDatasets] = useState<Dataset[]>([])
 	const [loading, setLoading] = useState(true)
+	const [loadError, setLoadError] = useState(false)
 
 	const loadDatasets = async () => {
-		getDatasets()
-			.then(data => setDatasets(data))
-			.finally(() => setLoading(false))
+		try {
+			const data = await getDatasets()
+			setDatasets(data)
+			setLoadError(false)
+		} catch {
+			setLoadError(true)
+		} finally {
+			setLoading(false)
+		}
 	}
 
 	const handleDeleteDataset = async (
@@ -35,7 +42,18 @@ export default function DashboardPage() {
 	}
 
 	useEffect(() => {
-		loadDatasets()
+		const load = async () => {
+			try {
+				const data = await getDatasets()
+				setDatasets(data)
+				setLoadError(false)
+			} catch {
+				setLoadError(true)
+			} finally {
+				setLoading(false)
+			}
+		}
+		load()
 	}, [])
 
 	const filteredDatasets =
@@ -69,6 +87,21 @@ export default function DashboardPage() {
 			{loading ? (
 				<div className="rounded-xl border border-dashed border-light-gray/30 p-10 text-center text-sm text-light-gray">
 					Loading files...
+				</div>
+			) : loadError ? (
+				<div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-error/30 bg-error/5 p-10 text-center text-sm text-error">
+					Could not load datasets. Is the server running?
+					<button
+						type="button"
+						onClick={loadDatasets}
+						className="cursor-pointer rounded-lg border border-error/40 px-3 py-1.5 text-error transition-colors hover:bg-error/10"
+					>
+						Retry
+					</button>
+				</div>
+			) : filteredDatasets.length === 0 ? (
+				<div className="rounded-xl border border-dashed border-light-gray/30 p-10 text-center text-sm text-light-gray">
+					No datasets yet. Upload a file to get started.
 				</div>
 			) : (
 				<div className="flex flex-col gap-3">

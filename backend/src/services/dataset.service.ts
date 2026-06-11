@@ -26,7 +26,13 @@ export const createDataset = async ({
 	const rows = parseFile(filePath, fileType)
 	const stats = analyzeRows(rows)
 
+	// file is parsed — remove it from disk regardless of the outcome
 	fs.unlink(filePath, () => {})
+
+	// reject files with no data rows
+	if (rows.length === 0) {
+		throw new Error('File has no data rows')
+	}
 
 	const [dataset] = await db
 		.insert(datasets)
