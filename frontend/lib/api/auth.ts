@@ -24,3 +24,20 @@ export const login = async (email: string, password: string) => {
 	useAuthStore.getState().setAuth(data.token, data.user)
 	return data
 }
+
+export const changePassword = async (
+	currentPassword: string,
+	newPassword: string
+) => {
+	const { data } = await api.patch<AuthResponse>('/auth/password', {
+		currentPassword,
+		newPassword
+	})
+	useAuthStore.getState().setAuth(data.token, data.user)
+	return data
+}
+
+export const deleteAccount = async () => {
+	await api.delete('/auth/account')
+	useAuthStore.getState().logout()
+}
