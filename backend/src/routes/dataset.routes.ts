@@ -3,6 +3,7 @@ import {
 	getDataset,
 	getDatasets,
 	getRows,
+	getSummary,
 	removeDataset,
 	uploadDataset
 } from '../controllers/dataset.controller.js'
@@ -16,6 +17,8 @@ datasetRoutes.use(authenticate)
 
 datasetRoutes.post('/upload', upload.single('file'), uploadDataset)
 datasetRoutes.get('/', getDatasets)
+// static route must come before '/:id' so it isn't treated as an id
+datasetRoutes.get('/stats/summary', getSummary)
 datasetRoutes.get('/:id', getDataset)
 datasetRoutes.get('/:id/rows', getRows)
 datasetRoutes.delete('/:id', removeDataset)

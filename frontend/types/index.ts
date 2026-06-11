@@ -38,3 +38,15 @@ export type RowsResponse = {
 	limit: number
 	totalPages: number
 }
+
+export type AnalyticsSummary = {
+	totals: {
+		datasetCount: number
+		totalRows: number
+		totalColumns: number
+		totalSize: string // bigint comes back as string
+	}
+	byType: { fileType: FileType; count: number }[]
+	columnsByType: { dataType: Column['dataType']; count: number }[]
+	quality: { totalNulls: number; totalColumnsCounted: number }
+}

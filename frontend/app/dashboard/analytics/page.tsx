@@ -1,26 +1,29 @@
 'use client'
 
 import { ChartCard } from '@/components/charts/ChartCard'
+import { ColumnTypesBar } from '@/components/charts/ColumnTypesBar'
+import { DataQualityCard } from '@/components/charts/DataQualityCard'
 import { DatasetsByTypePie } from '@/components/charts/DatasetsByTypePie'
 import { RowsByDatasetBar } from '@/components/charts/RowsByDatasetBar'
 import { StatCard } from '@/components/charts/StatCard'
-import { getDatasets } from '@/lib/api/datasets'
-import type { Dataset } from '@/types'
+import { getAnalyticsSummary, getDatasets } from '@/lib/api/datasets'
+import { formatBytes } from '@/lib/utils'
+import type { AnalyticsSummary, Dataset } from '@/types'
 import { useEffect, useState } from 'react'
 
 export default function AnalyticsPage() {
 	const [datasets, setDatasets] = useState<Dataset[]>([])
+	const [summary, setSummary] = useState<AnalyticsSummary | null>(null)
 	const [loading, setLoading] = useState(true)
 
 	useEffect(() => {
-		getDatasets()
-			.then(setDatasets)
+		Promise.all([getDatasets(), getAnalyticsSummary()])
+			.then(([d, s]) => {
+				setDatasets(d)
+				setSummary(s)
+			})
 			.finally(() => setLoading(false))
 	}, [])
-
-	// aggregate stats for the KPI cards
-	const totalRows = datasets.reduce((sum, d) => sum + d.rowCount, 0)
-	const totalColumns = datasets.reduce((sum, d) => sum + d.columnCount, 0)
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -33,7 +36,7 @@ export default function AnalyticsPage() {
 
 			{loading ? (
 				<p className="text-sm text-light-gray">Loading…</p>
-			) : datasets.length === 0 ? (
+			) : !summary || summary.totals.datasetCount === 0 ? (
 				<ChartCard title="">
 					<p className="py-8 text-center text-sm text-light-gray">
 						No datasets yet. Upload a file to see analytics.
@@ -45,26 +48,38 @@ export default function AnalyticsPage() {
 					<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
 						<StatCard
 							label="Datasets"
-							value={datasets.length}
+							value={summary.totals.datasetCount}
 						/>
 						<StatCard
 							label="Total rows"
-							value={totalRows.toLocaleString('en-US')}
+							value={summary.totals.totalRows.toLocaleString('en-US')}
 						/>
 						<StatCard
 							label="Total columns"
-							value={totalColumns}
+							value={summary.totals.totalColumns}
 						/>
 						<StatCard
-							label="File types"
-							value={new Set(datasets.map(d => d.fileType)).size}
+							label="Total size"
+							value={formatBytes(Number(summary.totals.totalSize))}
 						/>
 					</div>
 
-					{/* charts */}
+					{/* first row of charts */}
 					<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
 						<DatasetsByTypePie datasets={datasets} />
-						<RowsByDatasetBar datasets={datasets} />
+						<ColumnTypesBar data={summary.columnsByType} />
+					</div>
+
+					{/* second row */}
+					<div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+						<div className="lg:col-span-2">
+							<RowsByDatasetBar datasets={datasets} />
+						</div>
+						<DataQualityCard
+							totalRows={summary.totals.totalRows}
+							totalColumns={summary.totals.totalColumns}
+							totalNulls={summary.quality.totalNulls}
+						/>
 					</div>
 				</>
 			)}

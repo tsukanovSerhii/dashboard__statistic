@@ -1,20 +1,14 @@
 'use client'
 
 import { Dropdown } from '@/components/ui/Dropdown'
-import { UploadZone } from '@/components/UploadZone'
+import { UploadZone } from '@/components/dataset/UploadZone'
 import { getDatasets } from '@/lib/api/datasets'
+import { FILE_TYPE_BADGE } from '@/lib/constants'
 import { cn, formatBytes, formatDate } from '@/lib/utils'
 import { Dataset, FileType } from '@/types'
 import { ChevronRight, FileSpreadsheet } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-
-// badge colors for each file type
-const typeBadge: Record<FileType, string> = {
-	csv: 'bg-secondary/15 text-secondary',
-	xlsx: 'bg-primary/15 text-primary',
-	json: 'bg-warning/15 text-warning'
-}
 
 export default function DashboardPage() {
 	const [filter, setFilter] = useState<FileType | 'all'>('all')
@@ -88,7 +82,7 @@ export default function DashboardPage() {
 									<span
 										className={cn(
 											'rounded px-1.5 py-0.5 text-xs font-medium uppercase',
-											typeBadge[d.fileType]
+											FILE_TYPE_BADGE[d.fileType]
 										)}
 									>
 										{d.fileType}

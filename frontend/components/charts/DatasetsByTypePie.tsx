@@ -1,15 +1,9 @@
 'use client'
 
+import { FILE_TYPE_COLOR } from '@/lib/constants'
 import type { Dataset, FileType } from '@/types'
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { ChartCard } from './ChartCard'
-
-// one color per file type (matches the list badges)
-const COLORS: Record<FileType, string> = {
-	csv: 'var(--color-secondary)',
-	xlsx: 'var(--color-primary)',
-	json: 'var(--color-warning)'
-}
 
 const TYPES: FileType[] = ['csv', 'xlsx', 'json']
 
@@ -38,7 +32,7 @@ export const DatasetsByTypePie = ({ datasets }: { datasets: Dataset[] }) => {
 						{data.map(d => (
 							<Cell
 								key={d.type}
-								fill={COLORS[d.type]}
+								fill={FILE_TYPE_COLOR[d.type]}
 							/>
 						))}
 					</Pie>
@@ -61,7 +55,7 @@ export const DatasetsByTypePie = ({ datasets }: { datasets: Dataset[] }) => {
 					>
 						<span
 							className="h-2.5 w-2.5 rounded-full"
-							style={{ backgroundColor: COLORS[d.type] }}
+							style={{ backgroundColor: FILE_TYPE_COLOR[d.type] }}
 						/>
 						{d.name} · {d.value}
 					</div>

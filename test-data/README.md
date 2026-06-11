@@ -8,6 +8,11 @@ Sample files for testing dataset upload and analytics.
 | `users.json` | JSON | 8 | Array of objects, `null` values in `age`, `signup`, `active` |
 | `temperatures.csv` | CSV | 8 | All-numeric columns (no nulls) — clean numeric analytics |
 | `employees.xlsx` | XLSX | 10 | Excel format, one null in `salary`, boolean `remote` |
+| `transactions_large.csv` | CSV | 500 | Large file — test pagination (20 pages) and search |
+| `users_large.json` | JSON | 300 | Large JSON — test pagination and search |
+| `employees_large.xlsx` | XLSX | 400 | Large Excel — test pagination and search |
+
+> Large files are best for testing the content table: search (e.g. `Laptop`, `cancelled`, `pro`) and paging through results.
 
 ## How to test
 
