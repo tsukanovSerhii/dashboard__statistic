@@ -2,6 +2,7 @@ import { Router } from 'express'
 import {
 	getDataset,
 	getDatasets,
+	getRows,
 	removeDataset,
 	uploadDataset
 } from '../controllers/dataset.controller.js'
@@ -16,4 +17,5 @@ datasetRoutes.use(authenticate)
 datasetRoutes.post('/upload', upload.single('file'), uploadDataset)
 datasetRoutes.get('/', getDatasets)
 datasetRoutes.get('/:id', getDataset)
+datasetRoutes.get('/:id/rows', getRows)
 datasetRoutes.delete('/:id', removeDataset)
