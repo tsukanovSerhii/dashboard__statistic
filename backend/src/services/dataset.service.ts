@@ -1,9 +1,12 @@
-import { and, desc, eq } from 'drizzle-orm'
+import { and, asc, desc, eq, sql } from 'drizzle-orm'
 import fs from 'node:fs'
 import { db } from '../db/index.js'
-import { columnStats, datasets } from '../db/schema.js'
+import { columnStats, datasetRows, datasets } from '../db/schema.js'
 import { analyzeRows } from './analytics.service.js'
 import { detectFileType, parseFile } from './parser.service.js'
+
+// cap stored rows so the DB doesn't blow up on huge files
+const MAX_STORED_ROWS = 1000
 
 type UploadInput = {
 	userId: string
@@ -49,6 +52,18 @@ export const createDataset = async ({
 		)
 	}
 
+	// store the first N rows so we can show file content later
+	const rowsToStore = rows.slice(0, MAX_STORED_ROWS)
+	if (rowsToStore.length > 0) {
+		await db.insert(datasetRows).values(
+			rowsToStore.map((row, index) => ({
+				datasetId: dataset.id,
+				rowIndex: index,
+				data: row
+			}))
+		)
+	}
+
 	return dataset
 }
 
@@ -82,4 +97,65 @@ export const deleteDataset = async (id: string, userId: string) => {
 		.returning({ id: datasets.id })
 
 	return deleted.length > 0
+}
+
+type RowsQuery = {
+	datasetId: string
+	userId: string
+	search?: string
+	page?: number
+	limit?: number
+}
+
+// paginated + searchable rows for one dataset (only if it belongs to the user)
+export const getDatasetRows = async ({
+	datasetId,
+	userId,
+	search,
+	page = 1,
+	limit = 50
+}: RowsQuery) => {
+	// make sure the dataset belongs to this user
+	const [owned] = await db
+		.select({ id: datasets.id })
+		.from(datasets)
+		.where(and(eq(datasets.id, datasetId), eq(datasets.userId, userId)))
+
+	if (!owned) return null
+
+	// base filter: rows of this dataset
+	const filters = [eq(datasetRows.datasetId, datasetId)]
+
+	// search across the whole row by casting the JSON to text
+	if (search && search.trim()) {
+		filters.push(
+			sql`${datasetRows.data}::text ILIKE ${'%' + search.trim() + '%'}`
+		)
+	}
+
+	const where = and(...filters)
+
+	// total matching rows (for pagination)
+	const [{ total }] = await db
+		.select({ total: sql<number>`cast(count(*) as int)` })
+		.from(datasetRows)
+		.where(where)
+
+	const offset = (page - 1) * limit
+
+	const rows = await db
+		.select({ rowIndex: datasetRows.rowIndex, data: datasetRows.data })
+		.from(datasetRows)
+		.where(where)
+		.orderBy(asc(datasetRows.rowIndex))
+		.limit(limit)
+		.offset(offset)
+
+	return {
+		rows: rows.map(r => r.data),
+		total,
+		page,
+		limit,
+		totalPages: Math.ceil(total / limit)
+	}
 }

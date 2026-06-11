@@ -30,3 +30,11 @@ export type Dataset = {
 	createdAt: string // ISO date, e.g. '2026-06-01T10:00:00Z'
 	columns?: Column[] // column details (for the [id] page)
 }
+
+export type RowsResponse = {
+	rows: Record<string, unknown>[]
+	total: number
+	page: number
+	limit: number
+	totalPages: number
+}

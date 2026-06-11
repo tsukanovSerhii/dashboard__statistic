@@ -1,5 +1,6 @@
 'use client'
 
+import { DatasetTable } from '@/components/DatasetTable'
 import { getDatasetById } from '@/lib/api/datasets'
 import { cn, formatBytes } from '@/lib/utils'
 import type { Column, Dataset } from '@/types'
@@ -147,6 +148,9 @@ export default function DatasetPage() {
 					</table>
 				</div>
 			</div>
+
+			{/* table content with search + pagination */}
+			<DatasetTable datasetId={dataset.id} />
 		</div>
 	)
 }

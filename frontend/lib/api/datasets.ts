@@ -1,9 +1,19 @@
-import type { Dataset } from '@/types'
+import type { Dataset, RowsResponse } from '@/types'
 import { api } from './client'
 
 export const getDatasets = async (): Promise<Dataset[]> => {
 	const { data } = await api.get<{ datasets: Dataset[] }>('/datasets')
 	return data.datasets
+}
+
+export const getDatasetRows = async (
+	id: string,
+	params: { search?: string; page?: number; limit?: number }
+) => {
+	const { data } = await api.get<RowsResponse>(`/datasets/${id}/rows`, {
+		params
+	})
+	return data
 }
 
 export const getDatasetById = async (id: string): Promise<Dataset> => {

@@ -1,4 +1,12 @@
-import { integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+import {
+	index,
+	integer,
+	jsonb,
+	pgTable,
+	text,
+	timestamp,
+	uuid
+} from 'drizzle-orm/pg-core'
 
 // users
 export const users = pgTable('users', {
@@ -33,3 +41,17 @@ export const columnStats = pgTable('column_stats', {
 	nullCount: integer('null_count').notNull(),
 	uniqueCount: integer('unique_count').notNull()
 })
+
+// raw table rows (each row stored as JSON so columns can vary per file)
+export const datasetRows = pgTable(
+	'dataset_rows',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		datasetId: uuid('dataset_id')
+			.notNull()
+			.references(() => datasets.id, { onDelete: 'cascade' }),
+		rowIndex: integer('row_index').notNull(),
+		data: jsonb('data').notNull()
+	},
+	table => [index('dataset_rows_dataset_id_idx').on(table.datasetId)]
+)
