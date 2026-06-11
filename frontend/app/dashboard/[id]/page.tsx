@@ -1,27 +1,15 @@
 'use client'
 
-import { DatasetTable } from '@/components/DatasetTable'
+import { StatCard } from '@/components/charts/StatCard'
+import { DatasetTable } from '@/components/dataset/DatasetTable'
 import { getDatasetById } from '@/lib/api/datasets'
+import { COLUMN_TYPE_BADGE } from '@/lib/constants'
 import { cn, formatBytes } from '@/lib/utils'
-import type { Column, Dataset } from '@/types'
+import type { Dataset } from '@/types'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-
-const columnTypeBadge: Record<Column['dataType'], string> = {
-	number: 'bg-primary/15 text-primary',
-	string: 'bg-secondary/15 text-secondary',
-	date: 'bg-warning/15 text-warning',
-	boolean: 'bg-light-gray/20 text-light-gray'
-}
-
-const StatCard = ({ label, value }: { label: string; value: string }) => (
-	<div className="flex flex-col gap-1 rounded-xl border border-light-gray/20 bg-surface p-4">
-		<span className="text-xs text-light-gray">{label}</span>
-		<span className="text-xl font-semibold text-gray">{value}</span>
-	</div>
-)
 
 export default function DatasetPage() {
 	const params = useParams()
@@ -116,7 +104,7 @@ export default function DatasetPage() {
 											<span
 												className={cn(
 													'rounded px-1.5 py-0.5 text-xs font-medium',
-													columnTypeBadge[col.dataType]
+													COLUMN_TYPE_BADGE[col.dataType]
 												)}
 											>
 												{col.dataType}

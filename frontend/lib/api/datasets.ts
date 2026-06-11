@@ -1,9 +1,14 @@
-import type { Dataset, RowsResponse } from '@/types'
+import type { AnalyticsSummary, Dataset, RowsResponse } from '@/types'
 import { api } from './client'
 
 export const getDatasets = async (): Promise<Dataset[]> => {
 	const { data } = await api.get<{ datasets: Dataset[] }>('/datasets')
 	return data.datasets
+}
+
+export const getAnalyticsSummary = async (): Promise<AnalyticsSummary> => {
+	const { data } = await api.get<AnalyticsSummary>('/datasets/stats/summary')
+	return data
 }
 
 export const getDatasetRows = async (

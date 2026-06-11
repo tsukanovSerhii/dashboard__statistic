@@ -4,7 +4,7 @@ import { getDatasetRows } from '@/lib/api/datasets'
 import type { RowsResponse } from '@/types'
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Input } from './ui/Input'
+import { Input } from '../ui/Input'
 
 const LIMIT = 25
 

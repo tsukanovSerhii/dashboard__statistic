@@ -2,6 +2,7 @@ import type { Request, Response } from 'express'
 import {
 	createDataset,
 	deleteDataset,
+	getAnalyticsSummary,
 	getDatasetById,
 	getDatasetRows,
 	listDatasets
@@ -29,6 +30,11 @@ export const uploadDataset = async (req: Request, res: Response) => {
 export const getDatasets = async (req: Request, res: Response) => {
 	const data = await listDatasets(req.userId!)
 	res.json({ datasets: data })
+}
+
+export const getSummary = async (req: Request, res: Response) => {
+	const summary = await getAnalyticsSummary(req.userId!)
+	res.json(summary)
 }
 
 export const getDataset = async (req: Request, res: Response) => {

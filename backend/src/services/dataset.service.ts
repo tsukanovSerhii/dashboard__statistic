@@ -74,6 +74,53 @@ export const listDatasets = (userId: string) =>
 		.where(eq(datasets.userId, userId))
 		.orderBy(desc(datasets.createdAt))
 
+// aggregated analytics across all of the user's datasets
+export const getAnalyticsSummary = async (userId: string) => {
+	// totals from the datasets table
+	const [totals] = await db
+		.select({
+			datasetCount: sql<number>`cast(count(*) as int)`,
+			totalRows: sql<number>`cast(coalesce(sum(${datasets.rowCount}), 0) as int)`,
+			totalColumns: sql<number>`cast(coalesce(sum(${datasets.columnCount}), 0) as int)`,
+			totalSize: sql<number>`cast(coalesce(sum(${datasets.sizeBytes}), 0) as bigint)`
+		})
+		.from(datasets)
+		.where(eq(datasets.userId, userId))
+
+	// datasets grouped by file type
+	const byType = await db
+		.select({
+			fileType: datasets.fileType,
+			count: sql<number>`cast(count(*) as int)`
+		})
+		.from(datasets)
+		.where(eq(datasets.userId, userId))
+		.groupBy(datasets.fileType)
+
+	// column types across all datasets (join column_stats -> datasets for ownership)
+	const columnsByType = await db
+		.select({
+			dataType: columnStats.dataType,
+			count: sql<number>`cast(count(*) as int)`
+		})
+		.from(columnStats)
+		.innerJoin(datasets, eq(columnStats.datasetId, datasets.id))
+		.where(eq(datasets.userId, userId))
+		.groupBy(columnStats.dataType)
+
+	// data quality: total cells vs missing cells
+	const [quality] = await db
+		.select({
+			totalNulls: sql<number>`cast(coalesce(sum(${columnStats.nullCount}), 0) as int)`,
+			totalColumnsCounted: sql<number>`cast(count(*) as int)`
+		})
+		.from(columnStats)
+		.innerJoin(datasets, eq(columnStats.datasetId, datasets.id))
+		.where(eq(datasets.userId, userId))
+
+	return { totals, byType, columnsByType, quality }
+}
+
 export const getDatasetById = async (id: string, userId: string) => {
 	const [dataset] = await db
 		.select()
