@@ -1,0 +1,49 @@
+# Full stack: PostgreSQL + backend + frontend.
+# Run everything with:  docker compose up
+services:
+  db:
+    image: postgres:16
+    container_name: datalens_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: analytics
+      POSTGRES_PASSWORD: analytics_pass
+      POSTGRES_DB: analytics
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U analytics"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: datalens_backend
+    restart: unless-stopped
+    environment:
+      # 'db' is the service name on the compose network; internal port is 5432
+      DATABASE_URL: postgresql://analytics:analytics_pass@db:5432/analytics?schema=public
+      JWT_SECRET: dev-secret-change-in-production-1234567890
+      PORT: 4000
+    ports:
+      - "4000:4000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    container_name: datalens_frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
