@@ -2,8 +2,10 @@
 
 import { uploadDataset } from '@/lib/api/datasets'
 import { cn } from '@/lib/utils'
+import axios from 'axios'
 import { UploadCloud } from 'lucide-react'
 import { useRef, useState } from 'react'
+import { toast } from 'sonner'
 
 type UploadZoneProps = {
 	onUploaded: () => void
@@ -13,19 +15,20 @@ export const UploadZone = ({ onUploaded }: UploadZoneProps) => {
 	const inputRef = useRef<HTMLInputElement>(null)
 	const [fileName, setFileName] = useState<string | null>(null)
 	const [uploading, setUploading] = useState(false)
-	const [error, setError] = useState<string | null>(null)
 
 	const handleFile = async (file: File | undefined) => {
 		if (!file) return
-		setError(null)
 		setFileName(file.name)
 		setUploading(true)
 		try {
 			await uploadDataset(file)
+			toast.success(`"${file.name}" uploaded`)
 			onUploaded()
-		} catch (error) {
-			console.error('Upload failed', error)
-			setError('Failed to upload dataset')
+		} catch (err) {
+			const message = axios.isAxiosError(err)
+				? (err.response?.data?.error ?? 'Failed to upload dataset')
+				: 'Failed to upload dataset'
+			toast.error(message)
 		} finally {
 			setUploading(false)
 		}
@@ -51,8 +54,6 @@ export const UploadZone = ({ onUploaded }: UploadZoneProps) => {
 				{uploading ? `Uploading ${fileName}...` : 'Click to upload a dataset'}
 			</p>
 			<p className="text-xs text-light-gray">CSV, XLSX, JSON</p>
-
-			{error && <p className="text-xs text-error">{error}</p>}
 
 			<input
 				ref={inputRef}

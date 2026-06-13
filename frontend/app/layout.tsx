@@ -1,11 +1,12 @@
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
+import { ToastProvider } from '@/components/providers/ToastProvider'
 import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-	title: 'Dashboard',
+	title: 'DataLens — analytics dashboard',
 	description:
-		'This is a dashboard template built with Next.js and Tailwind CSS. It includes a sidebar, header, and main content area. The sidebar contains navigation links, while the header includes a search bar and user profile dropdown. The main content area is where you can display your dashboard widgets and data visualizations.'
+		'Upload CSV, XLSX or JSON files and explore their analytics.'
 }
 
 export default function RootLayout({
@@ -17,6 +18,7 @@ export default function RootLayout({
 		<html lang="en">
 			<body>
 				<ThemeProvider>{children}</ThemeProvider>
+				<ToastProvider />
 			</body>
 		</html>
 	)

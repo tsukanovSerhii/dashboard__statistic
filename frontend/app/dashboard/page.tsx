@@ -1,5 +1,6 @@
 'use client'
 
+import { DatasetListSkeleton } from '@/components/dataset/DatasetListSkeleton'
 import { UploadZone } from '@/components/dataset/UploadZone'
 import { Button } from '@/components/ui/Button'
 import { Dropdown } from '@/components/ui/Dropdown'
@@ -7,9 +8,11 @@ import { deleteDataset, getDatasets } from '@/lib/api/datasets'
 import { FILE_TYPE_BADGE } from '@/lib/constants'
 import { cn, formatBytes, formatDate } from '@/lib/utils'
 import { Dataset, FileType } from '@/types'
+import axios from 'axios'
 import { ChevronRight, FileSpreadsheet } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 export default function DashboardPage() {
 	const [filter, setFilter] = useState<FileType | 'all'>('all')
@@ -39,8 +42,16 @@ export default function DashboardPage() {
 		e.preventDefault()
 		e.stopPropagation()
 		if (!confirm(`Delete "${filename}"?`)) return
-		await deleteDataset(id)
-		loadDatasets()
+		try {
+			await deleteDataset(id)
+			toast.success(`"${filename}" deleted`)
+			loadDatasets()
+		} catch (err) {
+			const message = axios.isAxiosError(err)
+				? (err.response?.data?.error ?? 'Failed to delete dataset')
+				: 'Failed to delete dataset'
+			toast.error(message)
+		}
 	}
 
 	useEffect(() => {
@@ -87,9 +98,7 @@ export default function DashboardPage() {
 			</div>
 
 			{loading ? (
-				<div className="rounded-xl border border-dashed border-light-gray/30 p-10 text-center text-sm text-light-gray">
-					Loading files...
-				</div>
+				<DatasetListSkeleton />
 			) : loadError ? (
 				<div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-error/30 bg-error/5 p-10 text-center text-sm text-error">
 					Could not load datasets. Is the server running?

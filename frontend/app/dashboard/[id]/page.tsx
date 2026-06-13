@@ -1,6 +1,7 @@
 'use client'
 
 import { StatCard } from '@/components/charts/StatCard'
+import { DatasetDetailSkeleton } from '@/components/dataset/DatasetDetailSkeleton'
 import { DatasetTable } from '@/components/dataset/DatasetTable'
 import { getDatasetById } from '@/lib/api/datasets'
 import { COLUMN_TYPE_BADGE } from '@/lib/constants'
@@ -26,7 +27,7 @@ export default function DatasetPage() {
 			.finally(() => setLoading(false))
 	}, [id])
 
-	if (loading) return <p>Loading…</p>
+	if (loading) return <DatasetDetailSkeleton />
 	if (notFound || !dataset) return <p>Dataset not found</p>
 
 	const columns = dataset.columns ?? []
