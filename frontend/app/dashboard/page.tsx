@@ -17,6 +17,8 @@ export default function DashboardPage() {
 	const [loading, setLoading] = useState(true)
 	const [loadError, setLoadError] = useState(false)
 
+	const filesTypes = ['all', 'csv', 'xlsx', 'json']
+
 	const loadDatasets = async () => {
 		try {
 			const data = await getDatasets()
@@ -76,7 +78,7 @@ export default function DashboardPage() {
 				</h2>
 				<div className="w-48">
 					<Dropdown
-						options={['all', 'csv', 'xlsx', 'json']}
+						options={filesTypes}
 						value={filter}
 						onChange={v => setFilter(v as FileType | 'all')}
 						placeholder="Filter by type"
