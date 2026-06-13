@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/Input'
 import { changePassword, deleteAccount } from '@/lib/api/auth'
 import { useAuthStore } from '@/lib/stores/auth.store'
 import axios from 'axios'
-import { CheckCircle2, TriangleAlert } from 'lucide-react'
+import { TriangleAlert } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { SettingsCard } from './SettingsCard'
 
 export default function SettingsPage() {
@@ -16,15 +17,14 @@ export default function SettingsPage() {
 	const [newPassword, setNewPassword] = useState('')
 	const [confirmPassword, setConfirmPassword] = useState('')
 	const [error, setError] = useState<string | null>(null)
-	const [success, setSuccess] = useState(false)
 
 	const router = useRouter()
 
 	const handleSubmit = async (e: React.SyntheticEvent) => {
 		e.preventDefault()
 		setError(null)
-		setSuccess(false)
 
+		// inline validation stays next to the form
 		if (newPassword !== confirmPassword) {
 			return setError("Passwords don't match")
 		}
@@ -33,23 +33,27 @@ export default function SettingsPage() {
 		}
 		try {
 			await changePassword(currentPassword, newPassword)
-			setSuccess(true)
+			toast.success('Password updated')
 			setCurrentPassword('')
 			setNewPassword('')
 			setConfirmPassword('')
 		} catch (err) {
-			if (axios.isAxiosError(err)) {
-				setError(err.response?.data?.error ?? 'Failed')
-			} else {
-				setError('Something went wrong')
-			}
+			const message = axios.isAxiosError(err)
+				? (err.response?.data?.error ?? 'Failed to update password')
+				: 'Something went wrong'
+			setError(message)
 		}
 	}
 
 	const handleDeleteAccount = async () => {
 		if (!confirm('Delete your account? This cannot be undone.')) return
-		await deleteAccount()
-		router.replace('/login')
+		try {
+			await deleteAccount()
+			toast.success('Account deleted')
+			router.replace('/login')
+		} catch {
+			toast.error('Failed to delete account')
+		}
 	}
 
 	return (
@@ -116,15 +120,6 @@ export default function SettingsPage() {
 								className="shrink-0"
 							/>
 							{error}
-						</div>
-					)}
-					{success && (
-						<div className="flex items-center gap-2 rounded-lg bg-secondary/10 px-3 py-2.5 text-sm text-secondary">
-							<CheckCircle2
-								size={16}
-								className="shrink-0"
-							/>
-							Password updated successfully
 						</div>
 					)}
 
