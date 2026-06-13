@@ -1,5 +1,6 @@
 'use client'
 
+import { DatasetListSkeleton } from '@/components/dataset/DatasetListSkeleton'
 import { UploadZone } from '@/components/dataset/UploadZone'
 import { Button } from '@/components/ui/Button'
 import { Dropdown } from '@/components/ui/Dropdown'
@@ -97,9 +98,7 @@ export default function DashboardPage() {
 			</div>
 
 			{loading ? (
-				<div className="rounded-xl border border-dashed border-light-gray/30 p-10 text-center text-sm text-light-gray">
-					Loading files...
-				</div>
+				<DatasetListSkeleton />
 			) : loadError ? (
 				<div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-error/30 bg-error/5 p-10 text-center text-sm text-error">
 					Could not load datasets. Is the server running?
