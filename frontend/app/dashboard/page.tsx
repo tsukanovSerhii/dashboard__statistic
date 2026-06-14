@@ -26,15 +26,18 @@ export default function DashboardPage() {
 	const filesTypes = ['all', 'csv', 'xlsx', 'json']
 	const sortOptions = ['newest', 'oldest', 'name', 'size', 'rows']
 
-	const loadDatasets = useCallback(async () => {
+	const loadDatasets = useCallback(async (signal?: AbortSignal) => {
 		try {
 			const data = await getDatasets()
+			if (signal?.aborted) return
 			setDatasets(data)
 			setLoadError(false)
-		} catch {
+		} catch (err) {
+			if (axios.isAxiosError(err) && err.code === 'ERR_CANCELED') return
+			if (signal?.aborted) return
 			setLoadError(true)
 		} finally {
-			setLoading(false)
+			if (!signal?.aborted) setLoading(false)
 		}
 	}, [])
 
@@ -60,8 +63,10 @@ export default function DashboardPage() {
 	}
 
 	useEffect(() => {
-		const load = async () => { await loadDatasets() }
+		const controller = new AbortController()
+		const load = async () => { await loadDatasets(controller.signal) }
 		load()
+		return () => controller.abort()
 	}, [loadDatasets])
 
 	const filtered =
@@ -92,7 +97,7 @@ export default function DashboardPage() {
 				</p>
 			</div>
 
-			<UploadZone onUploaded={loadDatasets} />
+			<UploadZone onUploaded={() => loadDatasets()} />
 
 			<div className="flex items-center justify-between">
 				<h2 className="text-sm font-medium text-light-gray">
@@ -125,7 +130,7 @@ export default function DashboardPage() {
 					Could not load datasets. Is the server running?
 					<button
 						type="button"
-						onClick={loadDatasets}
+						onClick={() => loadDatasets()}
 						className="cursor-pointer rounded-lg border border-error/40 px-3 py-1.5 text-error transition-colors hover:bg-error/10"
 					>
 						Retry
