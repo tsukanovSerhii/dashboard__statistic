@@ -1,3 +1,4 @@
+import { QueryProvider } from '@/components/providers/QueryProvider'
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import { ToastProvider } from '@/components/providers/ToastProvider'
 import type { Metadata } from 'next'
@@ -25,7 +26,9 @@ export default function RootLayout({
 				/>
 			</head>
 			<body>
-				<ThemeProvider>{children}</ThemeProvider>
+				<QueryProvider>
+					<ThemeProvider>{children}</ThemeProvider>
+				</QueryProvider>
 				<ToastProvider />
 			</body>
 		</html>

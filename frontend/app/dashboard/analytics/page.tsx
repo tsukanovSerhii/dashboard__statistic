@@ -2,12 +2,11 @@
 
 import { ChartCard } from '@/components/charts/ChartCard'
 import { StatCard } from '@/components/charts/StatCard'
-import { getAnalyticsSummary, getDatasets } from '@/lib/api/datasets'
+import { useAnalytics } from '@/lib/hooks/useAnalytics'
+import { useDatasets } from '@/lib/hooks/useDatasets'
 import { formatBytes } from '@/lib/utils'
-import type { AnalyticsSummary, Dataset } from '@/types'
 import { Database, FileStack, Rows3, Weight } from 'lucide-react'
 import dynamic from 'next/dynamic'
-import { useEffect, useState } from 'react'
 
 const ChartSkeleton = () => (
 	<div className="h-70 animate-pulse rounded-xl bg-light-gray/10" />
@@ -31,15 +30,10 @@ const DataQualityCard = dynamic(
 )
 
 export default function AnalyticsPage() {
-	const [datasets, setDatasets] = useState<Dataset[]>([])
-	const [summary, setSummary] = useState<AnalyticsSummary | null>(null)
-	const [loading, setLoading] = useState(true)
+	const { data: datasets = [], isLoading: datasetsLoading } = useDatasets()
+	const { data: summary, isLoading: summaryLoading } = useAnalytics()
 
-	useEffect(() => {
-		Promise.all([getDatasets(), getAnalyticsSummary()])
-			.then(([d, s]) => { setDatasets(d); setSummary(s) })
-			.finally(() => setLoading(false))
-	}, [])
+	const loading = datasetsLoading || summaryLoading
 
 	return (
 		<div className="animate-fade-up flex flex-col gap-6">
@@ -62,21 +56,17 @@ export default function AnalyticsPage() {
 				</ChartCard>
 			) : (
 				<>
-					{/* KPI row */}
 					<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-						<StatCard label="Datasets"     value={summary.totals.datasetCount}                           icon={Database}   accent="primary"   />
-						<StatCard label="Total rows"   value={summary.totals.totalRows.toLocaleString('en-US')}      icon={Rows3}      accent="secondary" />
-						<StatCard label="Total columns" value={summary.totals.totalColumns}                           icon={FileStack}  accent="warning"   />
-						<StatCard label="Total size"   value={formatBytes(Number(summary.totals.totalSize))}         icon={Weight}     accent="error"     />
+						<StatCard label="Datasets"      value={summary.totals.datasetCount}                            icon={Database}  accent="primary"   />
+						<StatCard label="Total rows"    value={summary.totals.totalRows.toLocaleString('en-US')}       icon={Rows3}     accent="secondary" />
+						<StatCard label="Total columns" value={summary.totals.totalColumns}                            icon={FileStack} accent="warning"   />
+						<StatCard label="Total size"    value={formatBytes(Number(summary.totals.totalSize))}          icon={Weight}    accent="error"     />
 					</div>
 
-					{/* Charts — asymmetric layout */}
 					<div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-						{/* Pie — narrow */}
 						<ChartCard title="Files by type" subtitle="Distribution across formats">
 							<DatasetsByTypePie datasets={datasets} />
 						</ChartCard>
-						{/* Bar — wide */}
 						<div className="lg:col-span-2">
 							<ChartCard title="Column types" subtitle="How many columns per data type">
 								<ColumnTypesBar data={summary.columnsByType} />
@@ -84,7 +74,6 @@ export default function AnalyticsPage() {
 						</div>
 					</div>
 
-					{/* Second row */}
 					<div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
 						<div className="lg:col-span-2">
 							<ChartCard title="Rows per dataset" subtitle="Compare dataset sizes">
