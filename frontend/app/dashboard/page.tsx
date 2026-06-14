@@ -14,13 +14,17 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
+type SortOption = 'newest' | 'oldest' | 'name' | 'size' | 'rows'
+
 export default function DashboardPage() {
 	const [filter, setFilter] = useState<FileType | 'all'>('all')
+	const [sort, setSort] = useState<SortOption>('newest')
 	const [datasets, setDatasets] = useState<Dataset[]>([])
 	const [loading, setLoading] = useState(true)
 	const [loadError, setLoadError] = useState(false)
 
 	const filesTypes = ['all', 'csv', 'xlsx', 'json']
+	const sortOptions = ['newest', 'oldest', 'name', 'size', 'rows']
 
 	const loadDatasets = async () => {
 		try {
@@ -69,8 +73,24 @@ export default function DashboardPage() {
 		load()
 	}, [])
 
-	const filteredDatasets =
+	const filtered =
 		filter === 'all' ? datasets : datasets.filter(d => d.fileType === filter)
+
+	// sort a copy so we don't mutate state
+	const filteredDatasets = [...filtered].sort((a, b) => {
+		switch (sort) {
+			case 'oldest':
+				return a.createdAt.localeCompare(b.createdAt)
+			case 'name':
+				return a.filename.localeCompare(b.filename)
+			case 'size':
+				return b.sizeBytes - a.sizeBytes
+			case 'rows':
+				return b.rowCount - a.rowCount
+			default: // newest
+				return b.createdAt.localeCompare(a.createdAt)
+		}
+	})
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -87,13 +107,23 @@ export default function DashboardPage() {
 				<h2 className="text-sm font-medium text-light-gray">
 					Files · {filteredDatasets.length}
 				</h2>
-				<div className="w-48">
-					<Dropdown
-						options={filesTypes}
-						value={filter}
-						onChange={v => setFilter(v as FileType | 'all')}
-						placeholder="Filter by type"
-					/>
+				<div className="flex gap-2">
+					<div className="w-40">
+						<Dropdown
+							options={sortOptions}
+							value={sort}
+							onChange={v => setSort(v as SortOption)}
+							placeholder="Sort by"
+						/>
+					</div>
+					<div className="w-40">
+						<Dropdown
+							options={filesTypes}
+							value={filter}
+							onChange={v => setFilter(v as FileType | 'all')}
+							placeholder="Filter by type"
+						/>
+					</div>
 				</div>
 			</div>
 
