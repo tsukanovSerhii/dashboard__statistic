@@ -87,7 +87,7 @@ export const revokeRefreshToken = async (token: string) => {
 		.where(eq(refreshTokens.token, token))
 }
 
-export const getUserById = async (id: string) => {
+export const getUserById = async (id: string): Promise<{ id: string; email: string; createdAt: Date } | null> => {
 	const [user] = await db
 		.select({ id: users.id, email: users.email, createdAt: users.createdAt })
 		.from(users)
