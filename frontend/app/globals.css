@@ -1,8 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @import 'tailwindcss';
 
-/* enables dark theme via .dark class on <html> (not the system one) */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
@@ -21,10 +20,9 @@
 	--color-btn-pressed: #6a8df7;
 	--color-btn-disabled: #cecece;
 
-	--font-main: 'Roboto', sans-serif;
+	--font-main: 'Inter', sans-serif;
 }
 
-/* dark theme: override the same tokens with different values */
 .dark {
 	--color-gray: #e7e7ea;
 	--color-light-gray: #9a9aa5;
@@ -33,32 +31,72 @@
 	--color-title: #e7e7ea;
 }
 
-/* Custom global styles can be added here */
 body {
 	@apply bg-background text-gray font-main min-h-screen;
+	font-feature-settings: 'cv11', 'ss01';
+	-webkit-font-smoothing: antialiased;
 }
 
-/* Page fade-in */
+/* Dot grid background */
+.bg-dot-grid {
+	background-image: radial-gradient(circle, var(--color-light-gray) 1px, transparent 1px);
+	background-size: 24px 24px;
+	opacity: 0.18;
+}
+
+/* Gradient orbs */
+.orb {
+	position: absolute;
+	border-radius: 9999px;
+	filter: blur(80px);
+	pointer-events: none;
+}
+
+/* Glassmorphism card */
+.glass {
+	background: rgba(255, 255, 255, 0.7);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border: 1px solid rgba(255, 255, 255, 0.5);
+}
+.dark .glass {
+	background: rgba(26, 26, 46, 0.75);
+	border-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Animations */
 @keyframes fade-up {
-	from {
-		opacity: 0;
-		transform: translateY(8px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
+	from { opacity: 0; transform: translateY(10px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+	from { opacity: 0; }
+	to   { opacity: 1; }
+}
+@keyframes slide-in-left {
+	from { opacity: 0; transform: translateX(-16px); }
+	to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes float {
+	0%, 100% { transform: translateY(0px); }
+	50%       { transform: translateY(-8px); }
 }
 
-.animate-fade-up {
-	animation: fade-up 0.3s ease-out both;
-}
+.animate-fade-up       { animation: fade-up 0.35s ease-out both; }
+.animate-fade-in       { animation: fade-in 0.25s ease-out both; }
+.animate-slide-left    { animation: slide-in-left 0.3s ease-out both; }
+.animate-float         { animation: float 4s ease-in-out infinite; }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-	@apply text-title;
-}
+/* Staggered children */
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 60ms; }
+.stagger > *:nth-child(3) { animation-delay: 120ms; }
+.stagger > *:nth-child(4) { animation-delay: 180ms; }
+
+h1, h2, h3, h4, h5, h6 { @apply text-title; }
+
+/* Scrollbar */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { @apply bg-light-gray/30 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-light-gray/50; }

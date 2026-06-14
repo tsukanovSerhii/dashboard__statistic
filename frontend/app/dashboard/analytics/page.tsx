@@ -5,6 +5,7 @@ import { StatCard } from '@/components/charts/StatCard'
 import { getAnalyticsSummary, getDatasets } from '@/lib/api/datasets'
 import { formatBytes } from '@/lib/utils'
 import type { AnalyticsSummary, Dataset } from '@/types'
+import { Database, FileStack, Rows3, Weight } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
 
@@ -36,68 +37,67 @@ export default function AnalyticsPage() {
 
 	useEffect(() => {
 		Promise.all([getDatasets(), getAnalyticsSummary()])
-			.then(([d, s]) => {
-				setDatasets(d)
-				setSummary(s)
-			})
+			.then(([d, s]) => { setDatasets(d); setSummary(s) })
 			.finally(() => setLoading(false))
 	}, [])
 
 	return (
 		<div className="animate-fade-up flex flex-col gap-6">
 			<div>
-				<h1 className="text-2xl font-semibold">Analytics</h1>
-				<p className="mt-1 text-sm text-light-gray">
-					Overview across all your datasets
-				</p>
+				<h1 className="text-2xl font-bold">Analytics</h1>
+				<p className="mt-1 text-sm text-light-gray">Overview across all your datasets</p>
 			</div>
 
 			{loading ? (
-				<p className="text-sm text-light-gray">Loading…</p>
+				<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+					{[...Array(4)].map((_, i) => (
+						<div key={i} className="h-24 animate-pulse rounded-2xl bg-light-gray/10" />
+					))}
+				</div>
 			) : !summary || summary.totals.datasetCount === 0 ? (
-				<ChartCard title="">
+				<ChartCard title="No data yet">
 					<p className="py-8 text-center text-sm text-light-gray">
-						No datasets yet. Upload a file to see analytics.
+						Upload a file on the Dashboard to see analytics.
 					</p>
 				</ChartCard>
 			) : (
 				<>
-					{/* KPI cards */}
+					{/* KPI row */}
 					<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-						<StatCard
-							label="Datasets"
-							value={summary.totals.datasetCount}
-						/>
-						<StatCard
-							label="Total rows"
-							value={summary.totals.totalRows.toLocaleString('en-US')}
-						/>
-						<StatCard
-							label="Total columns"
-							value={summary.totals.totalColumns}
-						/>
-						<StatCard
-							label="Total size"
-							value={formatBytes(Number(summary.totals.totalSize))}
-						/>
+						<StatCard label="Datasets"     value={summary.totals.datasetCount}                           icon={Database}   accent="primary"   />
+						<StatCard label="Total rows"   value={summary.totals.totalRows.toLocaleString('en-US')}      icon={Rows3}      accent="secondary" />
+						<StatCard label="Total columns" value={summary.totals.totalColumns}                           icon={FileStack}  accent="warning"   />
+						<StatCard label="Total size"   value={formatBytes(Number(summary.totals.totalSize))}         icon={Weight}     accent="error"     />
 					</div>
 
-					{/* first row of charts */}
-					<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-						<DatasetsByTypePie datasets={datasets} />
-						<ColumnTypesBar data={summary.columnsByType} />
+					{/* Charts — asymmetric layout */}
+					<div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+						{/* Pie — narrow */}
+						<ChartCard title="Files by type" subtitle="Distribution across formats">
+							<DatasetsByTypePie datasets={datasets} />
+						</ChartCard>
+						{/* Bar — wide */}
+						<div className="lg:col-span-2">
+							<ChartCard title="Column types" subtitle="How many columns per data type">
+								<ColumnTypesBar data={summary.columnsByType} />
+							</ChartCard>
+						</div>
 					</div>
 
-					{/* second row */}
+					{/* Second row */}
 					<div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
 						<div className="lg:col-span-2">
-							<RowsByDatasetBar datasets={datasets} />
+							<ChartCard title="Rows per dataset" subtitle="Compare dataset sizes">
+								<RowsByDatasetBar datasets={datasets} />
+							</ChartCard>
 						</div>
-						<DataQualityCard
-							totalRows={summary.totals.totalRows}
-							totalColumns={summary.totals.totalColumns}
-							totalNulls={summary.quality.totalNulls}
-						/>
+						<ChartCard title="Data quality" subtitle="Fill rate across all columns">
+							<DataQualityCard
+								totalRows={summary.totals.totalRows}
+								totalColumns={summary.totals.totalColumns}
+								totalNulls={summary.quality.totalNulls}
+							/>
+						</ChartCard>
 					</div>
 				</>
 			)}

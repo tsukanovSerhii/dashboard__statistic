@@ -6,13 +6,15 @@ import { useThemeStore } from '@/lib/stores/theme.store'
 import { cn } from '@/lib/utils'
 import { User } from '@/types'
 import {
+	BarChart3,
 	ChartNoAxesColumnIncreasing,
 	ChevronsLeft,
 	LayoutDashboardIcon,
 	LogOut,
 	Moon,
 	SettingsIcon,
-	Sun
+	Sun,
+	X
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -20,19 +22,13 @@ import { Avatar } from '../ui/Avatar'
 
 const navigation = [
 	{ name: 'Dashboard', href: '/dashboard', icon: LayoutDashboardIcon },
-	{
-		name: 'Analytics',
-		href: '/dashboard/analytics',
-		icon: ChartNoAxesColumnIncreasing
-	},
-	{ name: 'Settings', href: '/dashboard/settings', icon: SettingsIcon }
+	{ name: 'Analytics', href: '/dashboard/analytics', icon: ChartNoAxesColumnIncreasing },
+	{ name: 'Settings', href: '/dashboard/settings', icon: SettingsIcon },
 ]
 
-type Props = {
-	user: User
-}
+type Props = { user: User; mobileOpen?: boolean; onMobileClose?: () => void }
 
-export const Sidebar = ({ user }: Props) => {
+export const Sidebar = ({ user, mobileOpen = false, onMobileClose }: Props) => {
 	const pathname = usePathname()
 	const router = useRouter()
 	const logout = useAuthStore(state => state.logout)
@@ -47,76 +43,82 @@ export const Sidebar = ({ user }: Props) => {
 		router.replace('/login')
 	}
 
-	// shared classes for a clickable row (nav link / menu button)
+	const handleNavClick = () => {
+		onMobileClose?.()
+	}
+
 	const rowClass = (active = false, danger = false) =>
 		cn(
-			'flex items-center gap-2 rounded-md py-2.5 text-sm font-medium transition-colors',
-			collapsed ? 'justify-center px-0' : 'px-2',
+			'flex items-center gap-3 rounded-xl py-2.5 text-sm font-medium transition-all duration-150',
+			collapsed ? 'justify-center px-2' : 'px-3',
 			danger
-				? 'text-error hover:bg-error/5'
+				? 'text-error hover:bg-error/8'
 				: active
-					? 'bg-primary/10 text-primary'
-					: 'text-gray hover:bg-primary/5'
+					? 'bg-primary text-white shadow-sm shadow-primary/30'
+					: 'text-light-gray hover:bg-primary/8 hover:text-gray'
 		)
 
-	return (
-		<aside
-			className={cn(
-				'flex h-screen flex-col border-r border-light-gray/20 py-4 transition-all duration-300',
-				collapsed ? 'w-20 px-3' : 'w-64 px-6'
-			)}
-		>
-			{/* logo + collapse toggle */}
-			<div
-				className={cn(
-					'flex items-center',
-					collapsed ? 'justify-center' : 'justify-between'
-				)}
-			>
+	const sidebarContent = (
+		<div className={cn(
+			'flex h-full flex-col py-5 transition-all duration-300',
+			collapsed ? 'px-3' : 'px-4'
+		)}>
+			{/* Logo + toggle */}
+			<div className={cn('flex items-center mb-6', collapsed ? 'justify-center' : 'justify-between px-1')}>
 				{!collapsed && (
-					<img
-						src="/logo.svg"
-						alt="Logoipsum"
-						className={cn(
-							'h-8 w-auto transition-[filter]',
-							isDark && 'brightness-0 invert'
-						)}
-					/>
+					<div className="flex items-center gap-2">
+						<div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
+							<BarChart3 size={14} className="text-white" />
+						</div>
+						<span className="font-semibold text-title">DataLens</span>
+					</div>
 				)}
-				<button
-					type="button"
-					onClick={toggleSidebar}
-					aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-					className="rounded-md p-1 text-light-gray transition-colors hover:bg-primary/5 hover:text-gray"
-				>
-					<ChevronsLeft
-						size={18}
-						className={cn('transition-transform', collapsed && 'rotate-180')}
-					/>
-				</button>
+				<div className="flex items-center gap-1">
+					{/* mobile close */}
+					{mobileOpen && (
+						<button
+							type="button"
+							onClick={onMobileClose}
+							className="rounded-lg p-1.5 text-light-gray hover:bg-primary/8 hover:text-gray lg:hidden"
+						>
+							<X size={16} />
+						</button>
+					)}
+					{/* desktop collapse */}
+					<button
+						type="button"
+						onClick={toggleSidebar}
+						aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+						className="hidden rounded-lg p-1.5 text-light-gray hover:bg-primary/8 hover:text-gray lg:block"
+					>
+						<ChevronsLeft
+							size={16}
+							className={cn('transition-transform duration-300', collapsed && 'rotate-180')}
+						/>
+					</button>
+				</div>
 			</div>
 
-			<nav className="mt-6">
+			{/* Nav */}
+			<nav className="flex-1">
 				{!collapsed && (
-					<h2 className="mb-4 px-2 text-sm tracking-wider text-light-gray">
-						Main
-					</h2>
+					<p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-widest text-light-gray/70">
+						Menu
+					</p>
 				)}
-				<ul className="space-y-3">
+				<ul className="space-y-1">
 					{navigation.map(item => {
 						const isActive = pathname === item.href
 						return (
 							<li key={item.name}>
 								<Link
 									href={item.href}
+									onClick={handleNavClick}
 									title={collapsed ? item.name : undefined}
 									className={rowClass(isActive)}
 								>
-									<item.icon
-										size={20}
-										className="shrink-0"
-									/>
-									{!collapsed && item.name}
+									<item.icon size={18} className="shrink-0" />
+									{!collapsed && <span>{item.name}</span>}
 								</Link>
 							</li>
 						)
@@ -124,68 +126,73 @@ export const Sidebar = ({ user }: Props) => {
 				</ul>
 			</nav>
 
-			<div className="mt-auto">
+			{/* Bottom */}
+			<div className="space-y-1">
 				{!collapsed && (
-					<h2 className="mb-4 px-2 text-sm tracking-wider text-light-gray">
-						Other menu
-					</h2>
+					<p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-widest text-light-gray/70">
+						Preferences
+					</p>
 				)}
-				<ul className="space-y-3">
-					<li>
-						<button
-							type="button"
-							onClick={toggleTheme}
-							title={collapsed ? (isDark ? 'Light mode' : 'Dark mode') : undefined}
-							className={cn(rowClass(), 'w-full')}
-						>
-							{isDark ? (
-								<Sun
-									size={20}
-									className="shrink-0"
-								/>
-							) : (
-								<Moon
-									size={20}
-									className="shrink-0"
-								/>
-							)}
-							{!collapsed && (isDark ? 'Light mode' : 'Dark mode')}
-						</button>
-					</li>
-					<li>
-						<button
-							type="button"
-							onClick={handleLogout}
-							title={collapsed ? 'Logout' : undefined}
-							className={cn(rowClass(false, true), 'w-full')}
-						>
-							<LogOut
-								size={20}
-								className="shrink-0"
-							/>
-							{!collapsed && 'Logout'}
-						</button>
-					</li>
-				</ul>
-
-				<div
-					className={cn(
-						'mt-4 flex items-center border-t border-light-gray/20 pt-4',
-						collapsed ? 'justify-center' : 'gap-3'
-					)}
+				<button
+					type="button"
+					onClick={toggleTheme}
+					title={collapsed ? (isDark ? 'Light mode' : 'Dark mode') : undefined}
+					className={cn(rowClass(), 'w-full')}
 				>
-					<Avatar
-						name={user.name}
-						src={user.imgSrc || null}
-					/>
+					{isDark
+						? <Sun size={18} className="shrink-0" />
+						: <Moon size={18} className="shrink-0" />
+					}
+					{!collapsed && (isDark ? 'Light mode' : 'Dark mode')}
+				</button>
+				<button
+					type="button"
+					onClick={handleLogout}
+					title={collapsed ? 'Logout' : undefined}
+					className={cn(rowClass(false, true), 'w-full')}
+				>
+					<LogOut size={18} className="shrink-0" />
+					{!collapsed && 'Logout'}
+				</button>
+
+				<div className={cn(
+					'mt-3 flex items-center border-t border-light-gray/15 pt-3',
+					collapsed ? 'justify-center' : 'gap-3 px-1'
+				)}>
+					<Avatar name={user.name} src={user.imgSrc || null} />
 					{!collapsed && (
-						<div className="flex flex-col">
-							<span className="text-sm font-medium text-gray">{user.name}</span>
-							<span className="text-xs text-light-gray">Product designer</span>
+						<div className="min-w-0 flex flex-col">
+							<span className="truncate text-sm font-medium text-title">{user.name}</span>
+							<span className="text-xs text-light-gray">Free plan</span>
 						</div>
 					)}
 				</div>
 			</div>
-		</aside>
+		</div>
+	)
+
+	return (
+		<>
+			{/* Desktop sidebar */}
+			<aside className={cn(
+				'hidden h-screen shrink-0 border-r border-light-gray/15 bg-surface transition-all duration-300 lg:flex lg:flex-col',
+				collapsed ? 'w-17' : 'w-60'
+			)}>
+				{sidebarContent}
+			</aside>
+
+			{/* Mobile drawer overlay */}
+			{mobileOpen && (
+				<div className="fixed inset-0 z-40 lg:hidden">
+					<div
+						className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in"
+						onClick={onMobileClose}
+					/>
+					<aside className="absolute left-0 top-0 h-full w-64 bg-surface shadow-2xl animate-slide-left">
+						{sidebarContent}
+					</aside>
+				</div>
+			)}
+		</>
 	)
 }
