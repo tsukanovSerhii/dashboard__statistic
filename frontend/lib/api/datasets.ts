@@ -1,14 +1,31 @@
 import type { AnalyticsSummary, Dataset, RowsResponse } from '@/types'
 import { api } from './client'
 
-export const getDatasets = async (): Promise<Dataset[]> => {
+const TTL = 30_000 // 30 s
+
+type CacheEntry<T> = { data: T; at: number }
+const cache: { datasets?: CacheEntry<Dataset[]>; summary?: CacheEntry<AnalyticsSummary> } = {}
+
+const fresh = <T>(entry?: CacheEntry<T>) =>
+	!!entry && Date.now() - entry.at < TTL
+
+export const getDatasets = async (bust = false): Promise<Dataset[]> => {
+	if (!bust && fresh(cache.datasets)) return cache.datasets!.data
 	const { data } = await api.get<{ datasets: Dataset[] }>('/datasets')
+	cache.datasets = { data: data.datasets, at: Date.now() }
 	return data.datasets
 }
 
-export const getAnalyticsSummary = async (): Promise<AnalyticsSummary> => {
+export const getAnalyticsSummary = async (bust = false): Promise<AnalyticsSummary> => {
+	if (!bust && fresh(cache.summary)) return cache.summary!.data
 	const { data } = await api.get<AnalyticsSummary>('/datasets/stats/summary')
+	cache.summary = { data, at: Date.now() }
 	return data
+}
+
+export const invalidateCache = () => {
+	delete cache.datasets
+	delete cache.summary
 }
 
 export const getDatasetRows = async (

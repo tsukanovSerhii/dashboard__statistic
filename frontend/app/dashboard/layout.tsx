@@ -4,6 +4,8 @@ import { AuthGuard } from '@/components/providers/AuthGuard'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Topbar } from '@/components/layout/Topbar'
 import { useAuthStore } from '@/lib/stores/auth.store'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
 export default function DashboardLayout({
 	children
@@ -11,6 +13,13 @@ export default function DashboardLayout({
 	children: React.ReactNode
 }) {
 	const authUser = useAuthStore(state => state.user)
+	const router = useRouter()
+
+	// prefetch secondary pages so first navigation feels instant
+	useEffect(() => {
+		router.prefetch('/dashboard/analytics')
+		router.prefetch('/dashboard/settings')
+	}, [router])
 
 	// map the auth user to the UI user shape (name/imgSrc)
 	const user = {

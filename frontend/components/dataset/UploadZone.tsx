@@ -1,6 +1,6 @@
 'use client'
 
-import { uploadDataset } from '@/lib/api/datasets'
+import { invalidateCache, uploadDataset } from '@/lib/api/datasets'
 import { cn } from '@/lib/utils'
 import axios from 'axios'
 import { UploadCloud } from 'lucide-react'
@@ -22,6 +22,7 @@ export const UploadZone = ({ onUploaded }: UploadZoneProps) => {
 		setUploading(true)
 		try {
 			await uploadDataset(file)
+			invalidateCache()
 			toast.success(`"${file.name}" uploaded`)
 			onUploaded()
 		} catch (err) {
