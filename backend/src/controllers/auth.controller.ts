@@ -4,7 +4,9 @@ import {
 	deleteUser,
 	getUserById,
 	loginUser,
-	registerUser
+	refreshAccessToken,
+	registerUser,
+	revokeRefreshToken
 } from '../services/auth.service.js'
 
 export const register = async (req: Request, res: Response) => {
@@ -59,4 +61,23 @@ export const updatePassword = async (req: Request, res: Response) => {
 export const deleteAccount = async (req: Request, res: Response) => {
 	await deleteUser(req.userId!)
 	res.status(204).send()
+}
+
+export const refresh = async (req: Request, res: Response) => {
+	try {
+		const { refreshToken } = req.body
+		const tokens = await refreshAccessToken(refreshToken)
+		res.json(tokens)
+	} catch {
+		res.status(401).json({ error: 'Invalid or expired refresh token' })
+	}
+}
+
+export const logout = async (req: Request, res: Response) => {
+	try {
+		const { refreshToken } = req.body
+		if (refreshToken) await revokeRefreshToken(refreshToken)
+	} finally {
+		res.status(204).send()
+	}
 }
