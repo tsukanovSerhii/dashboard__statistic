@@ -16,6 +16,14 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
+			<head>
+				{/* Runs before paint — prevents white flash when dark theme is stored */}
+				<script
+					dangerouslySetInnerHTML={{
+						__html: `try{const t=JSON.parse(localStorage.getItem('theme')||'{}');if(t.state?.theme==='dark')document.documentElement.classList.add('dark')}catch{}`
+					}}
+				/>
+			</head>
 			<body>
 				<ThemeProvider>{children}</ThemeProvider>
 				<ToastProvider />

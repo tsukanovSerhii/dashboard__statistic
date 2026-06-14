@@ -1,4 +1,5 @@
 import {
+	boolean,
 	index,
 	integer,
 	jsonb,
@@ -41,6 +42,22 @@ export const columnStats = pgTable('column_stats', {
 	nullCount: integer('null_count').notNull(),
 	uniqueCount: integer('unique_count').notNull()
 })
+
+// refresh tokens — stored so we can revoke them on logout
+export const refreshTokens = pgTable(
+	'refresh_tokens',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		userId: uuid('user_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		token: text('token').notNull().unique(),
+		revoked: boolean('revoked').notNull().default(false),
+		expiresAt: timestamp('expires_at').notNull(),
+		createdAt: timestamp('created_at').defaultNow().notNull()
+	},
+	table => [index('refresh_tokens_user_id_idx').on(table.userId)]
+)
 
 // raw table rows (each row stored as JSON so columns can vary per file)
 export const datasetRows = pgTable(

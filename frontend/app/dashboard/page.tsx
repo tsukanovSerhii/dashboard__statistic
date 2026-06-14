@@ -4,7 +4,7 @@ import { DatasetListSkeleton } from '@/components/dataset/DatasetListSkeleton'
 import { UploadZone } from '@/components/dataset/UploadZone'
 import { Button } from '@/components/ui/Button'
 import { Dropdown } from '@/components/ui/Dropdown'
-import { deleteDataset, getDatasets } from '@/lib/api/datasets'
+import { deleteDataset, getDatasets, invalidateCache } from '@/lib/api/datasets'
 import { FILE_TYPE_BADGE } from '@/lib/constants'
 import { cn, formatBytes, formatDate } from '@/lib/utils'
 import { Dataset, FileType } from '@/types'
@@ -48,6 +48,7 @@ export default function DashboardPage() {
 		if (!confirm(`Delete "${filename}"?`)) return
 		try {
 			await deleteDataset(id)
+			invalidateCache()
 			toast.success(`"${filename}" deleted`)
 			loadDatasets()
 		} catch (err) {
