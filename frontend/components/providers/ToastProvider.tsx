@@ -13,6 +13,7 @@ export const ToastProvider = () => {
 			position="top-right"
 			richColors
 			closeButton
+			duration={3000}
 		/>
 	)
 }
