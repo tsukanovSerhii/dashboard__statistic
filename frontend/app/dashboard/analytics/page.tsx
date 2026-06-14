@@ -1,15 +1,33 @@
 'use client'
 
 import { ChartCard } from '@/components/charts/ChartCard'
-import { ColumnTypesBar } from '@/components/charts/ColumnTypesBar'
-import { DataQualityCard } from '@/components/charts/DataQualityCard'
-import { DatasetsByTypePie } from '@/components/charts/DatasetsByTypePie'
-import { RowsByDatasetBar } from '@/components/charts/RowsByDatasetBar'
 import { StatCard } from '@/components/charts/StatCard'
 import { getAnalyticsSummary, getDatasets } from '@/lib/api/datasets'
 import { formatBytes } from '@/lib/utils'
 import type { AnalyticsSummary, Dataset } from '@/types'
+import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
+
+const ChartSkeleton = () => (
+	<div className="h-70 animate-pulse rounded-xl bg-light-gray/10" />
+)
+
+const ColumnTypesBar = dynamic(
+	() => import('@/components/charts/ColumnTypesBar').then(m => m.ColumnTypesBar),
+	{ loading: ChartSkeleton }
+)
+const DatasetsByTypePie = dynamic(
+	() => import('@/components/charts/DatasetsByTypePie').then(m => m.DatasetsByTypePie),
+	{ loading: ChartSkeleton }
+)
+const RowsByDatasetBar = dynamic(
+	() => import('@/components/charts/RowsByDatasetBar').then(m => m.RowsByDatasetBar),
+	{ loading: ChartSkeleton }
+)
+const DataQualityCard = dynamic(
+	() => import('@/components/charts/DataQualityCard').then(m => m.DataQualityCard),
+	{ loading: ChartSkeleton }
+)
 
 export default function AnalyticsPage() {
 	const [datasets, setDatasets] = useState<Dataset[]>([])
