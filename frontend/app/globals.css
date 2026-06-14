@@ -38,6 +38,22 @@ body {
 	@apply bg-background text-gray font-main min-h-screen;
 }
 
+/* Page fade-in */
+@keyframes fade-up {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.animate-fade-up {
+	animation: fade-up 0.3s ease-out both;
+}
+
 h1,
 h2,
 h3,

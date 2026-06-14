@@ -34,7 +34,7 @@ export default function DatasetPage() {
 	const totalNulls = columns.reduce((sum, c) => sum + c.nullCount, 0)
 
 	return (
-		<div className="flex flex-col gap-6">
+		<div className="animate-fade-up flex flex-col gap-6">
 			<Link
 				href="/dashboard"
 				className="flex w-fit items-center gap-1 text-sm text-light-gray hover:text-gray"

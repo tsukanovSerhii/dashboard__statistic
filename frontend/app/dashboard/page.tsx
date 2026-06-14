@@ -93,7 +93,7 @@ export default function DashboardPage() {
 	})
 
 	return (
-		<div className="flex flex-col gap-6">
+		<div className="animate-fade-up flex flex-col gap-6">
 			<div>
 				<h1 className="text-2xl font-semibold">My datasets</h1>
 				<p className="mt-1 text-sm text-light-gray">
@@ -150,7 +150,7 @@ export default function DashboardPage() {
 						<Link
 							key={d.id}
 							href={`/dashboard/${d.id}`}
-							className="group flex items-center gap-4 rounded-xl border border-light-gray/20 bg-surface p-4 transition-colors hover:border-primary/40 hover:bg-primary/5"
+							className="group flex items-center gap-4 rounded-xl border border-light-gray/20 bg-surface p-4 transition-all duration-200 hover:scale-[1.01] hover:border-primary/40 hover:bg-primary/5 hover:shadow-sm"
 						>
 							{/* icon */}
 							<div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-background">

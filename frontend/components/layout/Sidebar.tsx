@@ -77,7 +77,10 @@ export const Sidebar = ({ user }: Props) => {
 					<img
 						src="/logo.svg"
 						alt="Logoipsum"
-						className="h-8 w-auto"
+						className={cn(
+							'h-8 w-auto transition-[filter]',
+							isDark && 'brightness-0 invert'
+						)}
 					/>
 				)}
 				<button
