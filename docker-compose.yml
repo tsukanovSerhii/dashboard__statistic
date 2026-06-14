@@ -27,6 +27,7 @@ services:
       # 'db' is the service name on the compose network; internal port is 5432
       DATABASE_URL: postgresql://analytics:analytics_pass@db:5432/analytics?schema=public
       JWT_SECRET: dev-secret-change-in-production-1234567890
+      JWT_REFRESH_SECRET: dev-refresh-secret-change-in-production-0987654321
       PORT: 4000
     ports:
       - "4000:4000"
