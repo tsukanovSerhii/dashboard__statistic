@@ -11,7 +11,7 @@ import { Dataset, FileType } from '@/types'
 import axios from 'axios'
 import { ChevronRight, FileSpreadsheet } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 type SortOption = 'newest' | 'oldest' | 'name' | 'size' | 'rows'
@@ -26,7 +26,7 @@ export default function DashboardPage() {
 	const filesTypes = ['all', 'csv', 'xlsx', 'json']
 	const sortOptions = ['newest', 'oldest', 'name', 'size', 'rows']
 
-	const loadDatasets = async () => {
+	const loadDatasets = useCallback(async () => {
 		try {
 			const data = await getDatasets()
 			setDatasets(data)
@@ -36,7 +36,7 @@ export default function DashboardPage() {
 		} finally {
 			setLoading(false)
 		}
-	}
+	}, [])
 
 	const handleDeleteDataset = async (
 		e: React.MouseEvent,
@@ -59,19 +59,9 @@ export default function DashboardPage() {
 	}
 
 	useEffect(() => {
-		const load = async () => {
-			try {
-				const data = await getDatasets()
-				setDatasets(data)
-				setLoadError(false)
-			} catch {
-				setLoadError(true)
-			} finally {
-				setLoading(false)
-			}
-		}
+		const load = async () => { await loadDatasets() }
 		load()
-	}, [])
+	}, [loadDatasets])
 
 	const filtered =
 		filter === 'all' ? datasets : datasets.filter(d => d.fileType === filter)
