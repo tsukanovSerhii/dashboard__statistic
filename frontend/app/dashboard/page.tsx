@@ -118,7 +118,10 @@ export default function DashboardPage() {
 			</div>
 
 			{/* ── Upload zone ── */}
-			<UploadZone onUploaded={loadDatasets} />
+			<UploadZone
+				onUploaded={loadDatasets}
+				existingNames={datasets.map(d => d.filename)}
+			/>
 
 			{/* ── Filters + list ── */}
 			<div className="flex flex-col gap-4">
