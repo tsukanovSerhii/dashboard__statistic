@@ -1,3 +1,4 @@
+import { QueryProvider } from '@/components/providers/QueryProvider'
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import { ToastProvider } from '@/components/providers/ToastProvider'
 import type { Metadata } from 'next'
@@ -20,12 +21,14 @@ export default function RootLayout({
 				{/* Runs before paint — prevents white flash when dark theme is stored */}
 				<script
 					dangerouslySetInnerHTML={{
-						__html: `try{const t=JSON.parse(localStorage.getItem('theme')||'{}');if(t.state?.theme==='dark')document.documentElement.classList.add('dark')}catch{}`
+						__html: `try{const t=JSON.parse(localStorage.getItem('theme')||'{}');const theme=t.state?.theme??'dark';if(theme==='dark')document.documentElement.classList.add('dark')}catch{document.documentElement.classList.add('dark')}`
 					}}
 				/>
 			</head>
 			<body>
-				<ThemeProvider>{children}</ThemeProvider>
+				<QueryProvider>
+					<ThemeProvider>{children}</ThemeProvider>
+				</QueryProvider>
 				<ToastProvider />
 			</body>
 		</html>

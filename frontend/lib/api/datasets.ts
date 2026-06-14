@@ -57,3 +57,22 @@ export const uploadDataset = async (file: File): Promise<Dataset> => {
 export const deleteDataset = async (id: string): Promise<void> => {
 	await api.delete(`/datasets/${id}`)
 }
+
+export type ColumnDistribution = {
+	columnName: string
+	totalRows: number
+	sampledRows: number
+	nullCount: number
+	uniqueCount: number
+	topValues: { value: string; count: number }[]
+}
+
+export const getColumnDistribution = async (
+	datasetId: string,
+	columnName: string
+): Promise<ColumnDistribution> => {
+	const { data } = await api.get<ColumnDistribution>(
+		`/datasets/${datasetId}/columns/${encodeURIComponent(columnName)}/distribution`
+	)
+	return data
+}

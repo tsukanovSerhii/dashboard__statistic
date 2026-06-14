@@ -2,96 +2,145 @@
 
 import { ChartCard } from '@/components/charts/ChartCard'
 import { StatCard } from '@/components/charts/StatCard'
-import { getAnalyticsSummary, getDatasets } from '@/lib/api/datasets'
+import { EmptyStateIllustration } from '@/components/decorative/EmptyStateIllustration'
+import { ErrorBoundary } from '@/components/providers/ErrorBoundary'
+import { useAnalytics } from '@/lib/hooks/useAnalytics'
+import { useDatasets } from '@/lib/hooks/useDatasets'
 import { formatBytes } from '@/lib/utils'
-import type { AnalyticsSummary, Dataset } from '@/types'
 import { Database, FileStack, Rows3, Weight } from 'lucide-react'
 import dynamic from 'next/dynamic'
-import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 const ChartSkeleton = () => (
 	<div className="h-70 animate-pulse rounded-xl bg-light-gray/10" />
 )
 
 const ColumnTypesBar = dynamic(
-	() => import('@/components/charts/ColumnTypesBar').then(m => m.ColumnTypesBar),
+	() =>
+		import('@/components/charts/ColumnTypesBar').then(m => m.ColumnTypesBar),
 	{ loading: ChartSkeleton }
 )
 const DatasetsByTypePie = dynamic(
-	() => import('@/components/charts/DatasetsByTypePie').then(m => m.DatasetsByTypePie),
+	() =>
+		import('@/components/charts/DatasetsByTypePie').then(
+			m => m.DatasetsByTypePie
+		),
 	{ loading: ChartSkeleton }
 )
 const RowsByDatasetBar = dynamic(
-	() => import('@/components/charts/RowsByDatasetBar').then(m => m.RowsByDatasetBar),
+	() =>
+		import('@/components/charts/RowsByDatasetBar').then(
+			m => m.RowsByDatasetBar
+		),
 	{ loading: ChartSkeleton }
 )
 const DataQualityCard = dynamic(
-	() => import('@/components/charts/DataQualityCard').then(m => m.DataQualityCard),
+	() =>
+		import('@/components/charts/DataQualityCard').then(m => m.DataQualityCard),
 	{ loading: ChartSkeleton }
 )
 
 export default function AnalyticsPage() {
-	const [datasets, setDatasets] = useState<Dataset[]>([])
-	const [summary, setSummary] = useState<AnalyticsSummary | null>(null)
-	const [loading, setLoading] = useState(true)
+	const { data: datasets = [], isLoading: datasetsLoading } = useDatasets()
+	const { data: summary, isLoading: summaryLoading } = useAnalytics()
 
-	useEffect(() => {
-		Promise.all([getDatasets(), getAnalyticsSummary()])
-			.then(([d, s]) => { setDatasets(d); setSummary(s) })
-			.finally(() => setLoading(false))
-	}, [])
+	const loading = datasetsLoading || summaryLoading
 
 	return (
 		<div className="animate-fade-up flex flex-col gap-6">
 			<div>
 				<h1 className="text-2xl font-bold">Analytics</h1>
-				<p className="mt-1 text-sm text-light-gray">Overview across all your datasets</p>
+				<p className="mt-1 text-sm text-light-gray">
+					Overview across all your datasets
+				</p>
 			</div>
 
 			{loading ? (
 				<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
 					{[...Array(4)].map((_, i) => (
-						<div key={i} className="h-24 animate-pulse rounded-2xl bg-light-gray/10" />
+						<div
+							key={i}
+							className="h-24 animate-pulse rounded-2xl bg-light-gray/10"
+						/>
 					))}
 				</div>
 			) : !summary || summary.totals.datasetCount === 0 ? (
-				<ChartCard title="No data yet">
-					<p className="py-8 text-center text-sm text-light-gray">
-						Upload a file on the Dashboard to see analytics.
-					</p>
-				</ChartCard>
+				<div className="flex flex-col items-center gap-5 rounded-2xl border border-dashed border-light-gray/20 py-14 text-center">
+					<EmptyStateIllustration className="h-36 w-auto text-light-gray opacity-60" />
+					<div>
+						<p className="text-sm font-semibold text-title">
+							No data to analyse yet
+						</p>
+						<p className="mt-1 text-xs text-light-gray">
+							Upload a CSV, XLSX or JSON file to see charts here
+						</p>
+					</div>
+					<Link
+						href="/dashboard"
+						className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-btn-hover"
+					>
+						Go to Dashboard
+					</Link>
+				</div>
 			) : (
-				<>
-					{/* KPI row */}
+				<ErrorBoundary>
 					<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-						<StatCard label="Datasets"     value={summary.totals.datasetCount}                           icon={Database}   accent="primary"   />
-						<StatCard label="Total rows"   value={summary.totals.totalRows.toLocaleString('en-US')}      icon={Rows3}      accent="secondary" />
-						<StatCard label="Total columns" value={summary.totals.totalColumns}                           icon={FileStack}  accent="warning"   />
-						<StatCard label="Total size"   value={formatBytes(Number(summary.totals.totalSize))}         icon={Weight}     accent="error"     />
+						<StatCard
+							label="Datasets"
+							value={summary.totals.datasetCount}
+							icon={Database}
+							accent="primary"
+						/>
+						<StatCard
+							label="Total rows"
+							value={summary.totals.totalRows.toLocaleString('en-US')}
+							icon={Rows3}
+							accent="secondary"
+						/>
+						<StatCard
+							label="Total columns"
+							value={summary.totals.totalColumns}
+							icon={FileStack}
+							accent="warning"
+						/>
+						<StatCard
+							label="Total size"
+							value={formatBytes(Number(summary.totals.totalSize))}
+							icon={Weight}
+							accent="error"
+						/>
 					</div>
 
-					{/* Charts — asymmetric layout */}
 					<div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-						{/* Pie — narrow */}
-						<ChartCard title="Files by type" subtitle="Distribution across formats">
+						<ChartCard
+							title="Files by type"
+							subtitle="Distribution across formats"
+						>
 							<DatasetsByTypePie datasets={datasets} />
 						</ChartCard>
-						{/* Bar — wide */}
 						<div className="lg:col-span-2">
-							<ChartCard title="Column types" subtitle="How many columns per data type">
+							<ChartCard
+								title="Column types"
+								subtitle="How many columns per data type"
+							>
 								<ColumnTypesBar data={summary.columnsByType} />
 							</ChartCard>
 						</div>
 					</div>
 
-					{/* Second row */}
 					<div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
 						<div className="lg:col-span-2">
-							<ChartCard title="Rows per dataset" subtitle="Compare dataset sizes">
+							<ChartCard
+								title="Rows per dataset"
+								subtitle="Compare dataset sizes"
+							>
 								<RowsByDatasetBar datasets={datasets} />
 							</ChartCard>
 						</div>
-						<ChartCard title="Data quality" subtitle="Fill rate across all columns">
+						<ChartCard
+							title="Data quality"
+							subtitle="Fill rate across all columns"
+						>
 							<DataQualityCard
 								totalRows={summary.totals.totalRows}
 								totalColumns={summary.totals.totalColumns}
@@ -99,7 +148,7 @@ export default function AnalyticsPage() {
 							/>
 						</ChartCard>
 					</div>
-				</>
+				</ErrorBoundary>
 			)}
 		</div>
 	)

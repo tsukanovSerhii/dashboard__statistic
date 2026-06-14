@@ -143,6 +143,54 @@ export const getDatasetById = async (id: string, userId: string) => {
 	return { ...dataset, columns }
 }
 
+export const getColumnDistribution = async (
+	datasetId: string,
+	userId: string,
+	columnName: string
+) => {
+	const [owned] = await db
+		.select({ id: datasets.id, rowCount: datasets.rowCount })
+		.from(datasets)
+		.where(and(eq(datasets.id, datasetId), eq(datasets.userId, userId)))
+
+	if (!owned) return null
+
+	// pull raw values from stored rows
+	const rawRows = await db
+		.select({ data: datasetRows.data })
+		.from(datasetRows)
+		.where(eq(datasetRows.datasetId, datasetId))
+		.orderBy(asc(datasetRows.rowIndex))
+
+	// count occurrences per value
+	const freq = new Map<string, number>()
+	let nullCount = 0
+	for (const { data } of rawRows) {
+		const val = (data as Record<string, unknown>)[columnName]
+		if (val === null || val === undefined || val === '') {
+			nullCount++
+		} else {
+			const key = String(val)
+			freq.set(key, (freq.get(key) ?? 0) + 1)
+		}
+	}
+
+	// top 10 by frequency
+	const topValues = [...freq.entries()]
+		.sort((a, b) => b[1] - a[1])
+		.slice(0, 10)
+		.map(([value, count]) => ({ value, count }))
+
+	return {
+		columnName,
+		totalRows: owned.rowCount,
+		sampledRows: rawRows.length,
+		nullCount,
+		uniqueCount: freq.size,
+		topValues,
+	}
+}
+
 export const deleteDataset = async (id: string, userId: string) => {
 	const deleted = await db
 		.delete(datasets)

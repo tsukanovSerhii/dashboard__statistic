@@ -2,6 +2,7 @@ import { Router } from 'express'
 import {
 	getDataset,
 	getDatasets,
+	getDistribution,
 	getRows,
 	getSummary,
 	removeDataset,
@@ -21,4 +22,5 @@ datasetRoutes.get('/', getDatasets)
 datasetRoutes.get('/stats/summary', getSummary)
 datasetRoutes.get('/:id', getDataset)
 datasetRoutes.get('/:id/rows', getRows)
+datasetRoutes.get('/:id/columns/:col/distribution', getDistribution)
 datasetRoutes.delete('/:id', removeDataset)
