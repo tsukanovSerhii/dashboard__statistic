@@ -5,7 +5,9 @@ import { columnStats, datasetRows, datasets } from '../db/schema.js'
 import { analyzeRows } from './analytics.service.js'
 import { detectFileType, parseFile } from './parser.service.js'
 
-// cap stored rows so the DB doesn't blow up on huge files
+// Cap stored rows to keep DB size manageable.
+// Files with more rows are parsed fully for stats (rowCount, column types, nulls)
+// but only the first MAX_STORED_ROWS are available for preview and distribution queries.
 const MAX_STORED_ROWS = 1000
 
 type UploadInput = {

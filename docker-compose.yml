@@ -29,6 +29,7 @@ services:
       JWT_SECRET: dev-secret-change-in-production-1234567890
       JWT_REFRESH_SECRET: dev-refresh-secret-change-in-production-0987654321
       PORT: 4000
+      CORS_ORIGIN: http://localhost:3000
     ports:
       - "4000:4000"
     depends_on:

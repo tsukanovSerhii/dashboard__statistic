@@ -55,10 +55,17 @@ export const removeDataset = async (req: Request, res: Response) => {
 }
 
 export const getDistribution = async (req: Request, res: Response) => {
+	const col = String(req.params.col)
+
+	// reject column names that look like path traversal or injection attempts
+	if (col.length > 128 || /[<>"'`\\/\0]/.test(col)) {
+		return res.status(400).json({ error: 'Invalid column name' })
+	}
+
 	const result = await getColumnDistribution(
 		String(req.params.id),
 		req.userId!,
-		String(req.params.col)
+		col
 	)
 	if (!result) return res.status(404).json({ error: 'Dataset not found' })
 	res.json(result)

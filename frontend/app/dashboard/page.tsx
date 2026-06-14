@@ -6,6 +6,8 @@ import { HeroBanner } from '@/components/dashboard/HeroBanner'
 import { RecentDatasets } from '@/components/dashboard/RecentDatasets'
 import { DatasetListSkeleton } from '@/components/dataset/DatasetListSkeleton'
 import { UploadZone } from '@/components/dataset/UploadZone'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
+import { useConfirm } from '@/lib/hooks/useConfirm'
 import { useDatasets, useDeleteDataset } from '@/lib/hooks/useDatasets'
 import { FileType } from '@/types'
 import axios from 'axios'
@@ -33,11 +35,18 @@ export default function DashboardPage() {
 
 	const { data: datasets = [], isLoading, isError, refetch } = useDatasets()
 	const deleteMutation = useDeleteDataset()
+	const { confirm, state: confirmState, handleConfirm, handleCancel } = useConfirm()
 
 	const handleDelete = async (e: React.MouseEvent, id: string, filename: string) => {
 		e.preventDefault()
 		e.stopPropagation()
-		if (!confirm(`Delete "${filename}"?`)) return
+		const ok = await confirm({
+			title: `Delete "${filename}"?`,
+			description: 'This action cannot be undone. The dataset and all its data will be permanently removed.',
+			confirmLabel: 'Delete',
+			variant: 'danger',
+		})
+		if (!ok) return
 		try {
 			await deleteMutation.mutateAsync(id)
 			toast.success(`"${filename}" deleted`)
@@ -74,51 +83,64 @@ export default function DashboardPage() {
 	}, [datasets, filter, sort, search])
 
 	return (
-		<div className="animate-fade-up flex flex-col gap-6">
-			<HeroBanner datasets={datasets} />
+		<>
+			<div className="animate-fade-up flex flex-col gap-6">
+				<HeroBanner datasets={datasets} />
 
-			<UploadZone
-				onUploaded={() => refetch()}
-				existingNames={datasets.map(d => d.filename)}
-			/>
-
-			<RecentDatasets recentIds={recentIds} datasets={datasets} />
-
-			<div className="flex flex-col gap-4">
-				<DashboardFilters
-					count={filteredDatasets.length}
-					totalCols={totalCols}
-					search={search}
-					onSearch={setSearch}
-					sort={sort}
-					onSort={setSort}
-					filter={filter}
-					onFilter={setFilter}
+				<UploadZone
+					onUploaded={() => refetch()}
+					existingNames={datasets.map(d => d.filename)}
 				/>
 
-				{isLoading ? (
-					<DatasetListSkeleton />
-				) : isError ? (
-					<div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-error/30 bg-error/5 p-10 text-center text-sm text-error">
-						Could not load datasets. Is the server running?
-						<button
-							type="button"
-							onClick={() => refetch()}
-							className="cursor-pointer rounded-lg border border-error/40 px-3 py-1.5 text-error transition-colors hover:bg-error/10"
-						>
-							Retry
-						</button>
-					</div>
-				) : (
-					<DatasetGrid
-						datasets={filteredDatasets}
-						onDelete={handleDelete}
-						onOpen={handleOpen}
+				<RecentDatasets recentIds={recentIds} datasets={datasets} />
+
+				<div className="flex flex-col gap-4">
+					<DashboardFilters
+						count={filteredDatasets.length}
+						totalCols={totalCols}
 						search={search}
+						onSearch={setSearch}
+						sort={sort}
+						onSort={setSort}
 						filter={filter}
+						onFilter={setFilter}
 					/>
-				)}
+
+					{isLoading ? (
+						<DatasetListSkeleton />
+					) : isError ? (
+						<div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-error/30 bg-error/5 p-10 text-center text-sm text-error">
+							Could not load datasets. Is the server running?
+							<button
+								type="button"
+								onClick={() => refetch()}
+								className="cursor-pointer rounded-lg border border-error/40 px-3 py-1.5 text-error transition-colors hover:bg-error/10"
+							>
+								Retry
+							</button>
+						</div>
+					) : (
+						<DatasetGrid
+							datasets={filteredDatasets}
+							onDelete={handleDelete}
+							onOpen={handleOpen}
+							search={search}
+							filter={filter}
+						/>
+					)}
+				</div>
 			</div>
-		</div>
+
+			{confirmState && (
+				<ConfirmModal
+					title={confirmState.title}
+					description={confirmState.description}
+					confirmLabel={confirmState.confirmLabel}
+					variant={confirmState.variant}
+					onConfirm={handleConfirm}
+					onCancel={handleCancel}
+				/>
+			)}
+		</>
 	)
 }

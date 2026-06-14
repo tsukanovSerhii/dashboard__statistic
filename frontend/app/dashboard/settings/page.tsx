@@ -1,8 +1,10 @@
 'use client'
 
 import { Button } from '@/components/ui/Button'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { Input } from '@/components/ui/Input'
 import { changePassword, deleteAccount } from '@/lib/api/auth'
+import { useConfirm } from '@/lib/hooks/useConfirm'
 import { useAuthStore } from '@/lib/stores/auth.store'
 import axios from 'axios'
 import { TriangleAlert } from 'lucide-react'
@@ -19,6 +21,7 @@ export default function SettingsPage() {
 	const [error, setError] = useState<string | null>(null)
 
 	const router = useRouter()
+	const { confirm, state: confirmState, handleConfirm, handleCancel } = useConfirm()
 
 	const handleSubmit = async (e: React.SyntheticEvent) => {
 		e.preventDefault()
@@ -46,7 +49,13 @@ export default function SettingsPage() {
 	}
 
 	const handleDeleteAccount = async () => {
-		if (!confirm('Delete your account? This cannot be undone.')) return
+		const ok = await confirm({
+			title: 'Delete your account?',
+			description: 'This is permanent and removes all your datasets. This action cannot be undone.',
+			confirmLabel: 'Delete account',
+			variant: 'danger',
+		})
+		if (!ok) return
 		try {
 			await deleteAccount()
 			toast.success('Account deleted')
@@ -57,6 +66,7 @@ export default function SettingsPage() {
 	}
 
 	return (
+		<>
 		<div className="animate-fade-up mx-auto flex w-full max-w-2xl flex-col gap-6">
 			<div>
 				<h1 className="text-2xl font-semibold">Settings</h1>
@@ -151,5 +161,17 @@ export default function SettingsPage() {
 				</div>
 			</div>
 		</div>
+
+		{confirmState && (
+			<ConfirmModal
+				title={confirmState.title}
+				description={confirmState.description}
+				confirmLabel={confirmState.confirmLabel}
+				variant={confirmState.variant}
+				onConfirm={handleConfirm}
+				onCancel={handleCancel}
+			/>
+		)}
+		</>
 	)
 }

@@ -1,11 +1,13 @@
 'use client'
 
 import { invalidateCache, uploadDataset } from '@/lib/api/datasets'
+import { useConfirm } from '@/lib/hooks/useConfirm'
 import { cn } from '@/lib/utils'
 import axios from 'axios'
 import { CheckCircle2, FileSpreadsheet, Loader2, UploadCloud, X, XCircle } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { ConfirmModal } from '../ui/ConfirmModal'
 import { UploadSuccessModal } from './UploadSuccessModal'
 
 type UploadZoneProps = {
@@ -32,6 +34,7 @@ export const UploadZone = ({ onUploaded, existingNames = [] }: UploadZoneProps) 
 	const [queue, setQueue] = useState<QueueItem[]>([])
 	const [dragging, setDragging] = useState(false)
 	const [modalFiles, setModalFiles] = useState<UploadedFile[] | null>(null)
+	const { confirm, state: confirmState, handleConfirm, handleCancel } = useConfirm()
 
 	const setStatus = (id: string, status: FileStatus, error?: string) =>
 		setQueue(q => q.map(item => item.id === id ? { ...item, status, error } : item))
@@ -62,14 +65,13 @@ export const UploadZone = ({ onUploaded, existingNames = [] }: UploadZoneProps) 
 		}
 	}, [onUploaded])
 
-	const handleAddAndRun = useCallback((files: File[]) => {
+	const handleAddAndRun = useCallback(async (files: File[]) => {
 		const valid = files.filter(isValid)
 		if (valid.length === 0) {
 			toast.error('Only CSV, XLSX and JSON files are supported')
 			return
 		}
 
-		const duplicates = valid.filter(f => existingNames.includes(f.name))
 		const doAdd = (filesToAdd: File[]) => {
 			if (filesToAdd.length === 0) return
 			const items: QueueItem[] = filesToAdd.map(f => ({
@@ -84,16 +86,20 @@ export const UploadZone = ({ onUploaded, existingNames = [] }: UploadZoneProps) 
 			})
 		}
 
+		const duplicates = valid.filter(f => existingNames.includes(f.name))
 		if (duplicates.length > 0) {
 			const names = duplicates.map(f => `"${f.name}"`).join(', ')
-			const confirmed = confirm(
-				`${names} already exist${duplicates.length > 1 ? '' : 's'} in your datasets.\n\nUpload anyway?`
-			)
-			doAdd(confirmed ? valid : valid.filter(f => !duplicates.includes(f)))
+			const ok = await confirm({
+				title: `${duplicates.length > 1 ? 'Files' : 'File'} already exist${duplicates.length > 1 ? '' : 's'}`,
+				description: `${names} ${duplicates.length > 1 ? 'are' : 'is'} already in your datasets. Upload anyway and overwrite?`,
+				confirmLabel: 'Upload anyway',
+				variant: 'warning',
+			})
+			doAdd(ok ? valid : valid.filter(f => !duplicates.includes(f)))
 		} else {
 			doAdd(valid)
 		}
-	}, [existingNames, runQueue])
+	}, [existingNames, runQueue, confirm])
 
 	const onDragOver = (e: React.DragEvent) => { e.preventDefault(); setDragging(true) }
 	const onDragLeave = () => setDragging(false)
@@ -213,6 +219,18 @@ export const UploadZone = ({ onUploaded, existingNames = [] }: UploadZoneProps) 
 				<UploadSuccessModal
 					files={modalFiles}
 					onClose={() => setModalFiles(null)}
+				/>
+			)}
+
+			{/* Duplicate confirm */}
+			{confirmState && (
+				<ConfirmModal
+					title={confirmState.title}
+					description={confirmState.description}
+					confirmLabel={confirmState.confirmLabel}
+					variant={confirmState.variant}
+					onConfirm={handleConfirm}
+					onCancel={handleCancel}
 				/>
 			)}
 		</>
