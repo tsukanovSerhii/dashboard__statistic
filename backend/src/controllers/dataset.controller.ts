@@ -3,6 +3,7 @@ import {
 	createDataset,
 	deleteDataset,
 	getAnalyticsSummary,
+	getColumnDistribution,
 	getDatasetById,
 	getDatasetRows,
 	listDatasets
@@ -51,6 +52,16 @@ export const removeDataset = async (req: Request, res: Response) => {
 		return res.status(404).json({ error: 'Dataset not found' })
 	}
 	res.status(204).send()
+}
+
+export const getDistribution = async (req: Request, res: Response) => {
+	const result = await getColumnDistribution(
+		String(req.params.id),
+		req.userId!,
+		String(req.params.col)
+	)
+	if (!result) return res.status(404).json({ error: 'Dataset not found' })
+	res.json(result)
 }
 
 export const getRows = async (req: Request, res: Response) => {

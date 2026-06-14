@@ -1,13 +1,14 @@
 'use client'
 
 import { useDatasetRows } from '@/lib/hooks/useDatasetRows'
+import { TableSkeleton } from './TableSkeleton'
 import {
 	ColumnDef,
 	flexRender,
 	getCoreRowModel,
 	useReactTable,
 } from '@tanstack/react-table'
-import { ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Loader2, Search } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Input } from '../ui/Input'
 
@@ -30,7 +31,7 @@ export const DatasetTable = ({ datasetId }: { datasetId: string }) => {
 		return () => clearTimeout(t)
 	}, [search])
 
-	const { data, isFetching } = useDatasetRows(datasetId, debouncedSearch, page, LIMIT)
+	const { data, isFetching, isLoading } = useDatasetRows(datasetId, debouncedSearch, page, LIMIT)
 
 	const rows = data?.rows ?? []
 	const columnKeys = rows.length > 0 ? Object.keys(rows[0]) : []
@@ -62,6 +63,28 @@ export const DatasetTable = ({ datasetId }: { datasetId: string }) => {
 		setPage(1)
 	}
 
+	const exportCsv = () => {
+		if (rows.length === 0) return
+		const keys = Object.keys(rows[0])
+		const header = keys.join(',')
+		const body = rows.map(row =>
+			keys.map(k => {
+				const v = row[k]
+				const str = v === null || v === undefined ? '' : String(v)
+				return str.includes(',') || str.includes('"') || str.includes('\n')
+					? `"${str.replace(/"/g, '""')}"`
+					: str
+			}).join(',')
+		).join('\n')
+		const blob = new Blob([`${header}\n${body}`], { type: 'text/csv;charset=utf-8;' })
+		const url = URL.createObjectURL(blob)
+		const a = document.createElement('a')
+		a.href = url
+		a.download = `export_page${page}${debouncedSearch ? `_${debouncedSearch}` : ''}.csv`
+		a.click()
+		URL.revokeObjectURL(url)
+	}
+
 	const totalPages = data?.totalPages ?? 1
 
 	return (
@@ -72,18 +95,31 @@ export const DatasetTable = ({ datasetId }: { datasetId: string }) => {
 					{data && <span>· {data.total.toLocaleString('en-US')} rows</span>}
 					{isFetching && <Loader2 size={13} className="animate-spin text-primary" />}
 				</h2>
-				<div className="w-64">
-					<Input
-						iconLeft={Search}
-						placeholder="Search rows..."
-						value={search}
-						onChange={e => handleSearch(e.target.value)}
-						wrapperClassName="border-light-gray/20"
-					/>
+				<div className="flex items-center gap-2">
+					<div className="w-56">
+						<Input
+							iconLeft={Search}
+							placeholder="Search rows..."
+							value={search}
+							onChange={e => handleSearch(e.target.value)}
+							wrapperClassName="border-light-gray/20"
+						/>
+					</div>
+					<button
+						type="button"
+						onClick={exportCsv}
+						disabled={rows.length === 0}
+						title="Export current page as CSV"
+						className="flex h-9 items-center gap-1.5 rounded-xl border border-light-gray/20 bg-surface px-3 text-xs font-medium text-light-gray transition-colors hover:border-primary/40 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
+					>
+						<Download size={13} />
+						Export
+					</button>
 				</div>
 			</div>
 
-			<div className="overflow-x-auto rounded-xl border border-light-gray/20">
+			{isLoading ? <TableSkeleton /> : null}
+		<div className={`overflow-x-auto rounded-xl border border-light-gray/20 ${isLoading ? 'hidden' : ''}`}>
 				<table className="w-full text-sm">
 					<thead className="bg-background text-left text-light-gray">
 						{table.getHeaderGroups().map(hg => (
