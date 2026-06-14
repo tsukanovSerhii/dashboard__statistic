@@ -5,22 +5,42 @@ export const api = axios.create({
 	baseURL: process.env.NEXT_PUBLIC_API_URL
 })
 
-// attach the JWT token to every request (read straight from the store)
+// attach the access token to every outgoing request
 api.interceptors.request.use(config => {
 	const token = useAuthStore.getState().token
-	if (token) {
-		config.headers.Authorization = `Bearer ${token}`
-	}
+	if (token) config.headers.Authorization = `Bearer ${token}`
 	return config
 })
 
-// on 401 (expired/invalid token) — log out so the UI redirects to login
 api.interceptors.response.use(
 	res => res,
-	error => {
-		if (error.response?.status === 401) {
-			useAuthStore.getState().logout()
+	async err => {
+		const original = err.config
+
+		if (err.response?.status !== 401 || original._retry) {
+			return Promise.reject(err)
 		}
-		return Promise.reject(error)
+
+		original._retry = true
+
+		const { refreshToken, setAuth, logout, user } = useAuthStore.getState()
+
+		if (!refreshToken) {
+			logout()
+			return Promise.reject(err)
+		}
+
+		try {
+			const { data } = await axios.post(
+				`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+				{ refreshToken }
+			)
+			setAuth(data.accessToken, data.refreshToken, user!)
+			original.headers.Authorization = `Bearer ${data.accessToken}`
+			return api(original)
+		} catch {
+			logout()
+			return Promise.reject(err)
+		}
 	}
 )
