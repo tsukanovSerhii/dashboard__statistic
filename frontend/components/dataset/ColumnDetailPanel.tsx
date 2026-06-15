@@ -18,12 +18,17 @@ export const ColumnDetailPanel = ({
 	datasetId,
 	column,
 	rowCount,
-	onClose,
+	onClose
 }: ColumnDetailPanelProps) => {
-	const { data: dist, isLoading } = useColumnDistribution(datasetId, column.name)
+	const { data: dist, isLoading } = useColumnDistribution(
+		datasetId,
+		column.name
+	)
 
 	useEffect(() => {
-		const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+		const handler = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') onClose()
+		}
 		window.addEventListener('keydown', handler)
 		return () => window.removeEventListener('keydown', handler)
 	}, [onClose])
@@ -35,7 +40,7 @@ export const ColumnDetailPanel = ({
 		<>
 			{/* Backdrop */}
 			<div
-				className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] animate-fade-in"
+				className="fixed inset-0 z-40 animate-fade-in"
 				onClick={onClose}
 			/>
 
@@ -44,8 +49,15 @@ export const ColumnDetailPanel = ({
 				{/* Header */}
 				<div className="flex items-start justify-between gap-3 border-b border-light-gray/15 px-5 py-4">
 					<div className="min-w-0">
-						<p className="truncate text-base font-semibold text-title">{column.name}</p>
-						<span className={cn('mt-1 inline-block rounded px-1.5 py-0.5 text-xs font-medium', COLUMN_TYPE_BADGE[column.dataType])}>
+						<p className="truncate text-base font-semibold text-title">
+							{column.name}
+						</p>
+						<span
+							className={cn(
+								'mt-1 inline-block rounded px-1.5 py-0.5 text-xs font-medium',
+								COLUMN_TYPE_BADGE[column.dataType]
+							)}
+						>
 							{column.dataType}
 						</span>
 					</div>
@@ -62,10 +74,16 @@ export const ColumnDetailPanel = ({
 				<div className="grid grid-cols-3 gap-px border-b border-light-gray/15 bg-light-gray/10">
 					{[
 						{ label: 'Fill rate', value: `${fillRate}%` },
-						{ label: 'Nulls',     value: column.nullCount.toLocaleString('en-US') },
-						{ label: 'Unique',    value: column.uniqueCount.toLocaleString('en-US') },
+						{ label: 'Nulls', value: column.nullCount.toLocaleString('en-US') },
+						{
+							label: 'Unique',
+							value: column.uniqueCount.toLocaleString('en-US')
+						}
 					].map(s => (
-						<div key={s.label} className="flex flex-col gap-0.5 bg-surface px-4 py-3">
+						<div
+							key={s.label}
+							className="flex flex-col gap-0.5 bg-surface px-4 py-3"
+						>
 							<p className="text-xs text-light-gray">{s.label}</p>
 							<p className="text-base font-bold text-title">{s.value}</p>
 						</div>
@@ -82,7 +100,11 @@ export const ColumnDetailPanel = ({
 						<div
 							className={cn(
 								'h-full rounded-full transition-all',
-								fillRate >= 90 ? 'bg-secondary' : fillRate >= 60 ? 'bg-warning' : 'bg-error'
+								fillRate >= 90
+									? 'bg-secondary'
+									: fillRate >= 60
+										? 'bg-warning'
+										: 'bg-error'
 							)}
 							style={{ width: `${fillRate}%` }}
 						/>
@@ -92,30 +114,45 @@ export const ColumnDetailPanel = ({
 				{/* Top values */}
 				<div className="flex-1 overflow-y-auto px-5 py-4">
 					<p className="mb-3 text-xs font-semibold uppercase tracking-wider text-light-gray">
-						Top values {dist && `(${dist.sampledRows.toLocaleString('en-US')} rows sampled)`}
+						Top values{' '}
+						{dist &&
+							`(${dist.sampledRows.toLocaleString('en-US')} rows sampled)`}
 					</p>
 
 					{isLoading ? (
 						<div className="flex items-center justify-center py-12">
-							<Loader2 size={20} className="animate-spin text-primary" />
+							<Loader2
+								size={20}
+								className="animate-spin text-primary"
+							/>
 						</div>
 					) : !dist || dist.topValues.length === 0 ? (
-						<p className="py-8 text-center text-sm text-light-gray">No values found</p>
+						<p className="py-8 text-center text-sm text-light-gray">
+							No values found
+						</p>
 					) : (
 						<div className="flex flex-col gap-2">
 							{dist.topValues.map(({ value, count }) => {
 								const pct = Math.round((count / maxCount) * 100)
-								const share = dist.sampledRows > 0
-									? ((count / dist.sampledRows) * 100).toFixed(1)
-									: '0'
+								const share =
+									dist.sampledRows > 0
+										? ((count / dist.sampledRows) * 100).toFixed(1)
+										: '0'
 								return (
-									<div key={value} className="group flex flex-col gap-1">
+									<div
+										key={value}
+										className="group flex flex-col gap-1"
+									>
 										<div className="flex items-center justify-between gap-2">
-											<span className="truncate text-xs font-medium text-title max-w-[60%]" title={value}>
+											<span
+												className="truncate text-xs font-medium text-title max-w-[60%]"
+												title={value}
+											>
 												{value}
 											</span>
 											<span className="shrink-0 text-xs text-light-gray">
-												{count.toLocaleString('en-US')} <span className="text-light-gray/60">({share}%)</span>
+												{count.toLocaleString('en-US')}{' '}
+												<span className="text-light-gray/60">({share}%)</span>
 											</span>
 										</div>
 										<div className="h-1.5 w-full overflow-hidden rounded-full bg-background">
@@ -130,7 +167,9 @@ export const ColumnDetailPanel = ({
 
 							{dist.nullCount > 0 && (
 								<div className="mt-1 flex items-center justify-between rounded-lg bg-background px-3 py-2">
-									<span className="text-xs text-light-gray italic">null / empty</span>
+									<span className="text-xs text-light-gray italic">
+										null / empty
+									</span>
 									<span className="text-xs text-light-gray">
 										{dist.nullCount.toLocaleString('en-US')}
 									</span>
